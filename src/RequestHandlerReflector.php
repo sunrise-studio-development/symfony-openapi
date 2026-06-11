@@ -25,9 +25,14 @@ final readonly class RequestHandlerReflector implements RequestHandlerReflectorI
     {
         if (\is_string($reference)) {
             try {
-                return \str_contains($reference, '::')
-                    ? new ReflectionMethod($reference)
-                    : new ReflectionMethod($reference . '::__invoke');
+                $method = \str_contains($reference, '::')
+                    ? $reference
+                    : $reference . '::__invoke';
+
+                /** @var ReflectionMethod */
+                return \PHP_VERSION_ID >= 80300
+                    ? ReflectionMethod::createFromMethodName($method)
+                    : new ReflectionMethod($method);
             } catch (ReflectionException) {
             }
         }
