@@ -67,7 +67,8 @@ final class MapQueryParameterOperationEnricher implements
                 'in' => 'query',
                 'name' => $mapQueryParameter->name ?? $requestHandlerParameter->name,
                 'schema' => $queryParameterSchema,
-                'required' => !$requestHandlerParameter->isDefaultValueAvailable()
+                'required' => !$requestHandlerParameter->isVariadic()
+                    && !$requestHandlerParameter->isDefaultValueAvailable()
                     && !$requestHandlerParameter->allowsNull(),
             ];
         }

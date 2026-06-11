@@ -1,0 +1,100 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sunrise\Symfony\OpenApi\Tests\Fixture;
+
+use DateTimeImmutable;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Attribute\MapDateTime;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
+
+final readonly class ControllerFixture
+{
+    public function __invoke(): void
+    {
+    }
+
+    public function queryParameter(
+        #[MapQueryParameter(name: 'foo')]
+        int $bar,
+        #[MapQueryParameter]
+        ?string $baz = null,
+        #[MapQueryParameter]
+        string ...$qux,
+    ): void {
+    }
+
+    public function queryString(
+        #[MapQueryString]
+        DtoFixture $query,
+        #[MapQueryString(key: 'filter')]
+        DtoFixture $filter,
+    ): void {
+    }
+
+    public function requestPayload(
+        #[MapRequestPayload(acceptFormat: 'json')]
+        DtoFixture $payload,
+    ): void {
+    }
+
+    /**
+     * @param array<array-key, DtoFixture> $payload
+     */
+    public function requestPayloadList(
+        #[MapRequestPayload(acceptFormat: ['json'], type: DtoFixture::class)]
+        array $payload,
+    ): void {
+    }
+
+    public function uploadedFile(
+        #[MapUploadedFile(name: 'avatar')]
+        UploadedFile $file,
+        #[MapUploadedFile]
+        UploadedFile ...$attachments,
+    ): void {
+    }
+
+    public function pathVariable(int $petId): void
+    {
+    }
+
+    public function enumPathVariable(StringEnumFixture $status): void
+    {
+    }
+
+    public function entityPathVariable(PetFixture $pet): void
+    {
+    }
+
+    public function timestamp(
+        #[MapDateTime(format: 'Y-m-d')]
+        DateTimeImmutable $createdAt,
+    ): void {
+    }
+
+    public function disabledTimestamp(
+        #[MapDateTime(format: 'Y-m-d', disabled: true)]
+        DateTimeImmutable $createdAt,
+    ): void {
+    }
+
+    public function emptyResponse(): void
+    {
+    }
+
+    public function serializableResponse(): DtoFixture
+    {
+        return new DtoFixture();
+    }
+
+    public function symfonyResponse(): JsonResponse
+    {
+        return new JsonResponse();
+    }
+}

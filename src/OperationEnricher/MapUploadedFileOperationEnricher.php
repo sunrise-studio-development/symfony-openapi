@@ -56,7 +56,11 @@ final class MapUploadedFileOperationEnricher implements OpenApiOperationEnricher
             // phpcs:ignore Generic.Files.LineLength
             $operation['requestBody']['content']['multipart/form-data']['schema']['properties'][$fileName] = $fileSchema;
 
-            if (!$requestHandlerParameter->isDefaultValueAvailable() && !$requestHandlerParameter->allowsNull()) {
+            if (
+                !$requestHandlerParameter->isVariadic() &&
+                !$requestHandlerParameter->isDefaultValueAvailable() &&
+                !$requestHandlerParameter->allowsNull()
+            ) {
                 $operation['requestBody']['content']['multipart/form-data']['schema']['required'][] = $fileName;
                 $operation['requestBody']['required'] = true;
             }

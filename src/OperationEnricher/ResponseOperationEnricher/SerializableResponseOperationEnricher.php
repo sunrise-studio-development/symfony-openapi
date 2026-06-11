@@ -27,14 +27,21 @@ final class SerializableResponseOperationEnricher implements
     OpenApiConfigurationAwareInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
+    public const DEFAULT_STATUS = 200;
+
+    /**
+     * @var array<array-key, string>
+     */
+    public const DEFAULT_FORMATS = ['json'];
+
     private OpenApiConfiguration $openApiConfiguration;
     private OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
 
     public function __construct(
         private readonly ResponseMetadataResolverInterface $responseMetadataResolver,
-        private readonly int $defaultStatus,
+        private readonly int $defaultStatus = self::DEFAULT_STATUS,
         /** @var array<array-key, string> */
-        private readonly array $defaultFormats,
+        private readonly array $defaultFormats = self::DEFAULT_FORMATS,
     ) {
     }
 

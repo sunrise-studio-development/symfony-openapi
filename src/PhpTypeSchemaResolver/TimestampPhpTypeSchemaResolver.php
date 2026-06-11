@@ -51,7 +51,7 @@ final readonly class TimestampPhpTypeSchemaResolver implements
             $annotations = $phpTypeHolder->getAttributes(MapDateTime::class);
             if (isset($annotations[0])) {
                 $annotation = $annotations[0]->newInstance();
-                if ($annotation->disabled !== true && $annotation->format !== null) {
+                if ($annotation->format !== null && !$annotation->disabled) {
                     $phpTypeSchema['example'] = \date($annotation->format, 0);
                 }
             }

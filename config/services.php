@@ -78,11 +78,11 @@ return static function (ContainerConfigurator $container): void {
 
     $parameters->set('openapi.default_timestamp_format', OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT);
 
-    $parameters->set('openapi.default_empty_response_status', 204);
+    $parameters->set('openapi.default_empty_response_status', EmptyResponseOperationEnricher::DEFAULT_STATUS);
 
-    $parameters->set('openapi.default_response_status', 200);
+    $parameters->set('openapi.default_response_status', SerializableResponseOperationEnricher::DEFAULT_STATUS);
 
-    $parameters->set('openapi.default_response_formats', ['json']);
+    $parameters->set('openapi.default_response_formats', SerializableResponseOperationEnricher::DEFAULT_FORMATS);
 
     // ***
 

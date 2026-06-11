@@ -22,11 +22,13 @@ final class EmptyResponseOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiConfigurationAwareInterface
 {
+    public const DEFAULT_STATUS = 204;
+
     private OpenApiConfiguration $openApiConfiguration;
 
     public function __construct(
         private readonly ResponseMetadataResolverInterface $responseMetadataResolver,
-        private readonly int $defaultStatus,
+        private readonly int $defaultStatus = self::DEFAULT_STATUS,
     ) {
     }
 
