@@ -1,15 +1,17 @@
+# https://www.php.net/releases/index.php
+
 build:
   image: default-bionic
   nodes:
     analysis:
       environment:
-        php: '8.5'
+        php: '8.5.6'
       tests:
         override:
           - php-scrutinizer-run
     coverage:
       environment:
-        php: '8.5'
+        php: '8.5.6'
       tests:
         override:
           - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
@@ -18,25 +20,25 @@ build:
               format: clover
     php85:
       environment:
-        php: '8.5'
+        php: '8.5.6'
       tests:
         override:
           - command: composer test
     php84:
       environment:
-        php: '8.4.11'
+        php: '8.4.21'
       tests:
         override:
           - command: composer test
     php83:
       environment:
-        php: '8.3.16'
+        php: '8.3.30'
       tests:
         override:
           - command: composer test
     php82:
       environment:
-        php: '8.2.27'
+        php: '8.2.29'
       tests:
         override:
           - command: composer test
