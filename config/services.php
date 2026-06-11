@@ -36,9 +36,13 @@ use Sunrise\Symfony\OpenApi\OperationEnricher\MapQueryStringOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapRequestPayloadOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapUploadedFileOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\PathVariablesOperationEnricher;
+use Sunrise\Symfony\OpenApi\OperationEnricher\ResponseOperationEnricher\EmptyResponseOperationEnricher;
+use Sunrise\Symfony\OpenApi\OperationEnricher\ResponseOperationEnricher\SerializableResponseOperationEnricher;
 use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver
     as SymfonyTimestampPhpTypeSchemaResolver;
 use Sunrise\Symfony\OpenApi\RequestHandlerReflector;
+use Sunrise\Symfony\OpenApi\ResponseMetadataResolver;
+use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -71,6 +75,12 @@ return static function (ContainerConfigurator $container): void {
     $parameters->set('openapi.document_filename', '%kernel.project_dir%/var/openapi.json');
 
     $parameters->set('openapi.default_timestamp_format', OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT);
+
+    $parameters->set('openapi.default_empty_response_status', 204);
+
+    $parameters->set('openapi.default_response_status', 200);
+
+    $parameters->set('openapi.default_response_formats', ['json']);
 
     // ***
 
@@ -120,6 +130,15 @@ return static function (ContainerConfigurator $container): void {
     $services->set(MapUploadedFileOperationEnricher::class);
     $services->set(PathVariablesOperationEnricher::class);
 
+    $services->set(ResponseMetadataResolverInterface::class, ResponseMetadataResolver::class);
+
+    $services->set(EmptyResponseOperationEnricher::class)
+        ->arg('$defaultStatus', '%openapi.default_empty_response_status%');
+
+    $services->set(SerializableResponseOperationEnricher::class)
+        ->arg('$defaultStatus', '%openapi.default_response_status%')
+        ->arg('$defaultFormats', '%openapi.default_response_formats%');
+
     $services->set(OpenApiOperationEnricherManagerInterface::class, OpenApiOperationEnricherManager::class)
         ->arg('$operationEnrichers', [
             service(MapQueryParameterOperationEnricher::class),
@@ -127,6 +146,8 @@ return static function (ContainerConfigurator $container): void {
             service(MapRequestPayloadOperationEnricher::class),
             service(MapUploadedFileOperationEnricher::class),
             service(PathVariablesOperationEnricher::class),
+            service(EmptyResponseOperationEnricher::class),
+            service(SerializableResponseOperationEnricher::class),
         ])
         ->arg('$useDefaultOperationEnrichers', false);
 

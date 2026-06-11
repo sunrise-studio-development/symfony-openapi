@@ -25,14 +25,14 @@ final readonly class RequestHandlerReflector implements RequestHandlerReflectorI
     {
         if (\is_string($reference)) {
             try {
-                $method = \str_contains($reference, '::')
+                $controller = \str_contains($reference, '::')
                     ? $reference
                     : $reference . '::__invoke';
 
                 /** @psalm-var ReflectionMethod */
                 return \method_exists(ReflectionMethod::class, 'createFromMethodName')
-                    ? ReflectionMethod::createFromMethodName($method)
-                    : new ReflectionMethod($method);
+                    ? ReflectionMethod::createFromMethodName($controller)
+                    : new ReflectionMethod($controller);
             } catch (ReflectionException) {
             }
         }

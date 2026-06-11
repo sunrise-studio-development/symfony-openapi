@@ -85,8 +85,8 @@ final class MapRequestPayloadOperationEnricher implements
 
             $acceptFormats = (array) $mapRequestPayload->acceptFormat ?: $this->defaultAcceptFormats;
 
-            foreach (self::getMimeTypesForFormats($acceptFormats) as $acceptMimeType) {
-                $operation['requestBody']['content'][$acceptMimeType] = [
+            foreach (self::getMimeTypesForFormats($acceptFormats) as $mimeType) {
+                $operation['requestBody']['content'][$mimeType] = [
                     'schema' => $requestBodySchema,
                 ];
             }
