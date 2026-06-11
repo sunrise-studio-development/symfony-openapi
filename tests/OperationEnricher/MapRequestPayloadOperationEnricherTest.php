@@ -18,9 +18,9 @@ final class MapRequestPayloadOperationEnricherTest extends TestCase
         $operation = [];
 
         $operationEnricher = new MapRequestPayloadOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            $this->createRoute(),
+            $this->mockRoute(),
             self::createControllerReflection('requestPayload'),
             $operation,
         );
@@ -35,14 +35,14 @@ final class MapRequestPayloadOperationEnricherTest extends TestCase
         ], $operation['requestBody']);
     }
 
-    public function testEnrichListPayloadOperation(): void
+    public function testListPayload(): void
     {
         $operation = [];
 
         $operationEnricher = new MapRequestPayloadOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            $this->createRoute(),
+            $this->mockRoute(),
             self::createControllerReflection('requestPayloadList'),
             $operation,
         );

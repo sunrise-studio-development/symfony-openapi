@@ -16,7 +16,7 @@ final class TimestampPhpTypeSchemaResolverTest extends TestCase
 {
     use TestKit;
 
-    public function testResolvePhpTypeSchemaWithMapDateTimeFormat(): void
+    public function testMapDateTimeFormat(): void
     {
         $resolver = new TimestampPhpTypeSchemaResolver(new BaseTimestampPhpTypeSchemaResolver());
         $resolver->setOpenApiConfiguration(self::createOpenApiConfiguration());
@@ -28,7 +28,7 @@ final class TimestampPhpTypeSchemaResolverTest extends TestCase
         self::assertSame('1970-01-01', $schema['example']);
     }
 
-    public function testResolvePhpTypeSchemaWithDisabledMapDateTime(): void
+    public function testDisabledMapDateTime(): void
     {
         $resolver = new TimestampPhpTypeSchemaResolver(new BaseTimestampPhpTypeSchemaResolver());
         $resolver->setOpenApiConfiguration(self::createOpenApiConfiguration(defaultTimestampFormat: 'd.m.Y'));

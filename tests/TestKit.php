@@ -33,7 +33,7 @@ trait TestKit
         return new ReflectionMethod(ControllerFixture::class, $method);
     }
 
-    private function createRoute(string $path = '/foo'): RouteInterface
+    private function mockRoute(string $path = '/foo'): RouteInterface
     {
         $route = $this->createMock(RouteInterface::class);
         $route->method('getPath')->willReturn($path);
@@ -41,19 +41,34 @@ trait TestKit
         return $route;
     }
 
-    private static function createRouteAdapter(?Route $route = null): RouteAdapter
-    {
+    /**
+     * @param array<string, mixed> $defaults
+     * @param array<string, string> $requirements
+     * @param array<string, string|array{0: string, 1: string}> $mapping
+     */
+    private static function createRouteAdapter(
+        string $name = 'foo',
+        string $path = '/api/foo',
+        mixed $controller = ControllerFixture::class,
+        array $defaults = [],
+        array $requirements = [],
+        array $mapping = [],
+        ?RouteMetadata $metadata = null,
+    ): RouteAdapter {
+        $defaults['_controller'] = $controller;
+        $defaults['_route_mapping'] = $mapping;
+
         return new RouteAdapter(
-            'foo',
-            $route ?? new Route('/api/foo', ['_controller' => ControllerFixture::class]),
-            new RouteMetadata([], '', '', false, true),
+            $name,
+            new Route($path, $defaults, $requirements),
+            $metadata ?? new RouteMetadata([], '', '', false, true),
         );
     }
 
     /**
      * @param array<array-key, mixed> $schema
      */
-    private function createPhpTypeSchemaResolverManager(
+    private function mockPhpTypeSchemaResolverManager(
         array $schema = ['type' => 'schema'],
     ): OpenApiPhpTypeSchemaResolverManagerInterface {
         $manager = $this->createMock(OpenApiPhpTypeSchemaResolverManagerInterface::class);

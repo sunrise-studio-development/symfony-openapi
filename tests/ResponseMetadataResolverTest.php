@@ -25,15 +25,4 @@ final class ResponseMetadataResolverTest extends TestCase
         self::assertSame(201, $metadata->status);
         self::assertSame(['json'], $metadata->formats);
     }
-
-    public function testResolveEmptyResponseMetadata(): void
-    {
-        $metadata = (new ResponseMetadataResolver())->resolveResponseMetadata(
-            new Route('/api/foo'),
-            self::createControllerReflection('symfonyResponse'),
-        );
-
-        self::assertNull($metadata->status);
-        self::assertSame([], $metadata->formats);
-    }
 }

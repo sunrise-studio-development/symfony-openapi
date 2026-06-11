@@ -17,9 +17,9 @@ final class MapQueryParameterOperationEnricherTest extends TestCase
         $operation = [];
 
         $operationEnricher = new MapQueryParameterOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            $this->createRoute(),
+            $this->mockRoute(),
             self::createControllerReflection('queryParameter'),
             $operation,
         );

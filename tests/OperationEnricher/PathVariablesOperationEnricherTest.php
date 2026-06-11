@@ -7,10 +7,7 @@ namespace Sunrise\Symfony\OpenApi\Tests\OperationEnricher;
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Symfony\OpenApi\OperationEnricher\PathVariablesOperationEnricher;
-use Sunrise\Symfony\OpenApi\RouteAdapter;
-use Sunrise\Symfony\OpenApi\RouteMetadata;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
-use Symfony\Component\Routing\Route;
 
 final class PathVariablesOperationEnricherTest extends TestCase
 {
@@ -21,9 +18,9 @@ final class PathVariablesOperationEnricherTest extends TestCase
         $operation = [];
 
         $operationEnricher = new PathVariablesOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            self::createRouteAdapter(new Route('/api/pets/{petId}', requirements: ['petId' => '\d+'])),
+            self::createRouteAdapter(path: '/api/pets/{petId}', requirements: ['petId' => '\d+']),
             self::createControllerReflection('pathVariable'),
             $operation,
         );
@@ -42,18 +39,14 @@ final class PathVariablesOperationEnricherTest extends TestCase
         ], $operation['parameters']);
     }
 
-    public function testEnrichOperationWithMappedVariable(): void
+    public function testMappedVariable(): void
     {
         $operation = [];
 
         $operationEnricher = new PathVariablesOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            new RouteAdapter(
-                'foo',
-                new Route('/api/pets/{id}', ['_route_mapping' => ['id' => 'petId']]),
-                new RouteMetadata([], '', '', false, true),
-            ),
+            self::createRouteAdapter(path: '/api/pets/{id}', mapping: ['id' => 'petId']),
             self::createControllerReflection('pathVariable'),
             $operation,
         );
@@ -71,14 +64,14 @@ final class PathVariablesOperationEnricherTest extends TestCase
         ], $operation['parameters']);
     }
 
-    public function testSkipsUnsupportedVariable(): void
+    public function testUnsupportedVariable(): void
     {
         $operation = [];
 
         $operationEnricher = new PathVariablesOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            self::createRouteAdapter(new Route('/api/pets/{pet}')),
+            self::createRouteAdapter(path: '/api/pets/{pet}'),
             self::createControllerReflection('entityPathVariable'),
             $operation,
         );
@@ -95,12 +88,12 @@ final class PathVariablesOperationEnricherTest extends TestCase
         ], $operation['parameters']);
     }
 
-    public function testSkipsNonSymfonyRoute(): void
+    public function testNonSymfonyRoute(): void
     {
         $operation = [];
 
         $operationEnricher = new PathVariablesOperationEnricher();
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
             $this->createMock(RouteInterface::class),
             self::createControllerReflection('pathVariable'),

@@ -18,7 +18,7 @@ final class SwaggerControllerTest extends TestCase
         self::assertSame('text/html; charset=UTF-8', $response->headers->get('Content-Type'));
     }
 
-    public function testOpenapiUri(): void
+    public function testOpenApiUri(): void
     {
         $response = (new SwaggerController(new SwaggerConfiguration(openapiUri: '/openapi.json')))();
 

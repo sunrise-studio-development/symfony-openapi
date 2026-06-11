@@ -15,12 +15,12 @@ final class OpenApiPathBuilderTest extends TestCase
         $openApiPathBuilder = new OpenApiPathBuilder();
 
         $route = $this->createMock(RouteInterface::class);
-        $route->method('getPath')->willReturn('/foo/{id}');
+        $route->expects(self::once())->method('getPath')->willReturn('/foo/{id}');
 
         self::assertSame('/foo/{id}', $openApiPathBuilder->buildPath($route));
 
         $route = $this->createMock(RouteInterface::class);
-        $route->method('getPath')->willReturn('/foo/{!id}');
+        $route->expects(self::once())->method('getPath')->willReturn('/foo/{!id}');
 
         self::assertSame('/foo/{id}', $openApiPathBuilder->buildPath($route));
     }

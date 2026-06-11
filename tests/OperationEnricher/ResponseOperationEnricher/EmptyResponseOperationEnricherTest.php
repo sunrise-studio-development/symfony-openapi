@@ -9,7 +9,6 @@ use Sunrise\Symfony\OpenApi\OperationEnricher\ResponseOperationEnricher\EmptyRes
 use Sunrise\Symfony\OpenApi\ResponseMetadata;
 use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
-use Symfony\Component\Routing\Route;
 
 final class EmptyResponseOperationEnricherTest extends TestCase
 {
@@ -25,7 +24,7 @@ final class EmptyResponseOperationEnricherTest extends TestCase
         $operationEnricher = new EmptyResponseOperationEnricher($responseMetadataResolver);
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
         $operationEnricher->enrichOperation(
-            self::createRouteAdapter(new Route('/api/foo')),
+            self::createRouteAdapter(),
             self::createControllerReflection('emptyResponse'),
             $operation,
         );
@@ -37,7 +36,7 @@ final class EmptyResponseOperationEnricherTest extends TestCase
         ], $operation['responses']);
     }
 
-    public function testUsesDefaultStatus(): void
+    public function testDefaultStatus(): void
     {
         $operation = [];
 
@@ -47,7 +46,7 @@ final class EmptyResponseOperationEnricherTest extends TestCase
         $operationEnricher = new EmptyResponseOperationEnricher($responseMetadataResolver, 204);
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
         $operationEnricher->enrichOperation(
-            self::createRouteAdapter(new Route('/api/foo')),
+            self::createRouteAdapter(),
             self::createControllerReflection('emptyResponse'),
             $operation,
         );
@@ -59,7 +58,7 @@ final class EmptyResponseOperationEnricherTest extends TestCase
         ], $operation['responses']);
     }
 
-    public function testSkipsNonVoidResponse(): void
+    public function testNonVoidResponse(): void
     {
         $operation = [];
 

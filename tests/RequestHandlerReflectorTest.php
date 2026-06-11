@@ -12,7 +12,7 @@ use Sunrise\Symfony\OpenApi\Tests\Fixture\ControllerFixture;
 
 final class RequestHandlerReflectorTest extends TestCase
 {
-    public function testReflectsInvokableController(): void
+    public function testInvokableController(): void
     {
         $reflection = (new RequestHandlerReflector())->reflectRequestHandler(ControllerFixture::class);
 
@@ -20,7 +20,7 @@ final class RequestHandlerReflectorTest extends TestCase
         self::assertSame('__invoke', $reflection->getName());
     }
 
-    public function testReflectsControllerMethod(): void
+    public function testControllerMethod(): void
     {
         $reflection = (new RequestHandlerReflector())->reflectRequestHandler(
             ControllerFixture::class . '::symfonyResponse',
@@ -30,7 +30,7 @@ final class RequestHandlerReflectorTest extends TestCase
         self::assertSame('symfonyResponse', $reflection->getName());
     }
 
-    public function testFailsWhenReferenceIsNotReflectable(): void
+    public function testUnknownReference(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The request handler reference "unknown" could not be reflected.');

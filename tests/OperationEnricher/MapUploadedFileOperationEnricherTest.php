@@ -17,7 +17,7 @@ final class MapUploadedFileOperationEnricherTest extends TestCase
         $operation = [];
 
         (new MapUploadedFileOperationEnricher())->enrichOperation(
-            $this->createRoute(),
+            $this->mockRoute(),
             self::createControllerReflection('uploadedFile'),
             $operation,
         );

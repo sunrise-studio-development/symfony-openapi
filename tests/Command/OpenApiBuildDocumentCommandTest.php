@@ -28,7 +28,7 @@ final class OpenApiBuildDocumentCommandTest extends TestCase
         $routeCollection->add('internal.foo', $internalRoute);
 
         $router = $this->createMock(RouterInterface::class);
-        $router->method('getRouteCollection')->willReturn($routeCollection);
+        $router->expects(self::once())->method('getRouteCollection')->willReturn($routeCollection);
 
         $routeMetadataResolver = $this->createMock(RouteMetadataResolverInterface::class);
         $routeMetadataResolver
@@ -43,18 +43,17 @@ final class OpenApiBuildDocumentCommandTest extends TestCase
             ->expects(self::once())
             ->method('buildDocument')
             ->with(self::callback(static function (array $routes): bool {
-                /** @var RouteAdapter|false $route */
                 $route = \reset($routes);
 
                 return $route instanceof RouteAdapter
                     && $route->getName() === 'api.foo'
                     && \count($routes) === 1;
             }))
-            ->willReturn(['openapi' => '3.1.1']);
+            ->willReturn(['foo' => 'bar']);
         $openApiDocumentManager
             ->expects(self::once())
             ->method('saveDocument')
-            ->with(['openapi' => '3.1.1']);
+            ->with(['foo' => 'bar']);
 
         $commandTester = new CommandTester(
             new OpenApiBuildDocumentCommand(

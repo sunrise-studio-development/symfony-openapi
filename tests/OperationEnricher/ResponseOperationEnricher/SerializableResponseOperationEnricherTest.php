@@ -10,7 +10,6 @@ use Sunrise\Symfony\OpenApi\ResponseMetadata;
 use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Sunrise\Symfony\OpenApi\Tests\Fixture\DtoFixture;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
-use Symfony\Component\Routing\Route;
 
 final class SerializableResponseOperationEnricherTest extends TestCase
 {
@@ -25,9 +24,9 @@ final class SerializableResponseOperationEnricherTest extends TestCase
 
         $operationEnricher = new SerializableResponseOperationEnricher($responseMetadataResolver, 200, ['xml']);
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            self::createRouteAdapter(new Route('/api/foo')),
+            self::createRouteAdapter(),
             self::createControllerReflection('serializableResponse'),
             $operation,
         );
@@ -44,7 +43,7 @@ final class SerializableResponseOperationEnricherTest extends TestCase
         ], $operation['responses']);
     }
 
-    public function testUsesDefaults(): void
+    public function testDefaults(): void
     {
         $operation = [];
 
@@ -53,7 +52,7 @@ final class SerializableResponseOperationEnricherTest extends TestCase
 
         $operationEnricher = new SerializableResponseOperationEnricher($responseMetadataResolver, 200, ['json']);
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
             self::createRouteAdapter(),
             self::createControllerReflection('serializableResponse'),
@@ -72,7 +71,7 @@ final class SerializableResponseOperationEnricherTest extends TestCase
         ], $operation['responses']);
     }
 
-    public function testSkipsSymfonyResponse(): void
+    public function testSymfonyResponse(): void
     {
         $operation = [];
 
@@ -80,7 +79,7 @@ final class SerializableResponseOperationEnricherTest extends TestCase
             $this->createMock(ResponseMetadataResolverInterface::class),
         );
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
-        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->createPhpTypeSchemaResolverManager());
+        $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
             self::createRouteAdapter(),
             self::createControllerReflection('symfonyResponse'),

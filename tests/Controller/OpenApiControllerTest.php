@@ -18,16 +18,16 @@ final class OpenApiControllerTest extends TestCase
         $document = \fopen('php://memory', 'rb+');
         self::assertIsResource($document);
 
-        \fwrite($document, '{"openapi":"3.1.1"}');
+        \fwrite($document, '{"foo":"bar"}');
         \rewind($document);
 
         $openApiDocumentManager = $this->createMock(OpenApiDocumentManagerInterface::class);
-        $openApiDocumentManager->method('openDocument')->willReturn($document);
+        $openApiDocumentManager->expects(self::once())->method('openDocument')->willReturn($document);
 
         $response = (new OpenApiController(self::createOpenApiConfiguration(), $openApiDocumentManager))();
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));
-        self::assertSame('{"openapi":"3.1.1"}', $response->getContent());
+        self::assertSame('{"foo":"bar"}', $response->getContent());
     }
 }
