@@ -1,0 +1,72 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sunrise\Symfony\OpenApi\OperationEnricher;
+
+use ReflectionAttribute;
+use ReflectionClass;
+use ReflectionMethod;
+use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
+use Sunrise\Http\Router\OpenApi\TypeFactory;
+use Sunrise\Http\Router\RouteInterface;
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+
+/**
+ * @since 1.0.0
+ */
+final class MapQueryStringOperationEnricher implements
+    OpenApiOperationEnricherInterface,
+    OpenApiPhpTypeSchemaResolverManagerAwareInterface
+{
+    private OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
+
+    public function setOpenApiPhpTypeSchemaResolverManager(
+        OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
+    ): void {
+        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function enrichOperation(
+        RouteInterface $route,
+        ReflectionClass|ReflectionMethod $requestHandler,
+        array &$operation,
+    ): void {
+        if (! $requestHandler instanceof ReflectionMethod) {
+            return;
+        }
+
+        foreach ($requestHandler->getParameters() as $requestHandlerParameter) {
+            /** @var list<ReflectionAttribute<MapQueryString>> $annotations */
+            $annotations = $requestHandlerParameter->getAttributes(MapQueryString::class);
+            if ($annotations === []) {
+                continue;
+            }
+
+            $mapQueryString = $annotations[0]->newInstance();
+
+            $operation['parameters'][] = [
+                'in' => 'query',
+                'name' => $mapQueryString->key ?? $requestHandlerParameter->name,
+                'schema' => $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
+                    TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType()),
+                    $requestHandlerParameter,
+                ),
+                'required' => !$requestHandlerParameter->isDefaultValueAvailable()
+                    && !$requestHandlerParameter->allowsNull(),
+                // https://swagger.io/docs/specification/v3_0/serialization/#query-parameters
+                'style' => $mapQueryString->key === null ? 'form' : 'deepObject',
+            ];
+        }
+    }
+
+    public function getWeight(): int
+    {
+        return 20;
+    }
+}

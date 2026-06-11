@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset>
+  <rule ref="PSR12" />
+  <rule ref="Generic.PHP.RequireStrictTypes" />
+
+  <!-- https://github.com/slevomat/coding-standard -->
+  <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses" />
+  <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalConstants" />
+  <rule ref="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions" />
+
+  <file>src</file>
+  <file>tests</file>
+</ruleset>

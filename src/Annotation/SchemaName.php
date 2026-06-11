@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sunrise\Symfony\OpenApi\Annotation;
+
+use Attribute;
+use Sunrise\Http\Router\OpenApi\Annotation\SchemaNameInterface;
+
+/**
+ * @since 1.0.0
+ */
+#[Attribute(Attribute::TARGET_CLASS)]
+final readonly class SchemaName implements SchemaNameInterface
+{
+    public function __construct(
+        private string $name,
+    ) {
+    }
+
+    public function getSchemaName(): string
+    {
+        return $this->name;
+    }
+}
