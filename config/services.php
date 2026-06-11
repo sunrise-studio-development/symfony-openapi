@@ -45,6 +45,10 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
+    $parameters = $container->parameters();
+
+    // ***
+
     $services
         ->defaults()
         ->autowire()
@@ -52,19 +56,30 @@ return static function (ContainerConfigurator $container): void {
 
     // ***
 
+    $parameters->set('openapi.initial_document', [
+        'openapi' => OpenApiConfiguration::VERSION,
+        'info' => [
+            'title' => 'API',
+            'version' => '1.0.0',
+        ],
+    ]);
+
+    $parameters->set('openapi.initial_operation', [
+        'responses' => [],
+    ]);
+
+    $parameters->set('openapi.document_filename', '%kernel.project_dir%/var/openapi.json');
+
+    $parameters->set('openapi.default_timestamp_format', OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT);
+
+    // ***
+
     $services->set(OpenApiConfiguration::class)
-        ->arg('$initialDocument', [
-            'openapi' => OpenApiConfiguration::VERSION,
-            'info' => [
-                'title' => 'API',
-                'version' => '1.0.0',
-            ],
-        ])
-        ->arg('$initialOperation', [
-            'responses' => [],
-        ])
+        ->arg('$initialDocument', '%openapi.initial_document%')
+        ->arg('$initialOperation', '%openapi.initial_operation%')
         ->arg('$documentMediaType', MediaType::JSON)
-        ->arg('$documentFilename', '%kernel.project_dir%/var/openapi.json');
+        ->arg('$documentFilename', '%openapi.document_filename%')
+        ->arg('$defaultTimestampFormat', '%openapi.default_timestamp_format%');
 
     $services->set(SwaggerConfiguration::class);
 
