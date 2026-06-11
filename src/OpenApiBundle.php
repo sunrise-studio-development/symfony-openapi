@@ -10,6 +10,8 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
 /**
  * @since 1.0.0
+ *
+ * @psalm-suppress DeprecatedInterface
  */
 final class OpenApiBundle extends AbstractBundle
 {
