@@ -8,15 +8,15 @@ use Sunrise\Http\Router\Helper\TemplateRenderer;
 use Sunrise\Http\Router\OpenApi\Controller\SwaggerController as SunriseSwaggerController;
 use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Throwable;
 
 /**
  * @since 1.0.0
  */
-#[Route('/swagger.html', methods: ['GET'])]
 final readonly class SwaggerController
 {
+    public const ROUTE_PATH = SunriseSwaggerController::ROUTE_PATH;
+
     public function __construct(
         private SwaggerConfiguration $swaggerConfiguration,
     ) {

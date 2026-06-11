@@ -9,14 +9,14 @@ use Sunrise\Http\Router\OpenApi\Controller\OpenApiController as SunriseOpenApiCo
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * @since 1.0.0
  */
-#[Route(SunriseOpenApiController::ROUTE_PATH, methods: ['GET'])]
 final readonly class OpenApiController
 {
+    public const ROUTE_PATH = SunriseOpenApiController::ROUTE_PATH;
+
     public function __construct(
         private OpenApiConfiguration $openApiConfiguration,
         private OpenApiDocumentManagerInterface $openApiDocumentManager,
