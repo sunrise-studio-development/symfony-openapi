@@ -24,19 +24,19 @@ build:
           - command: composer test
     php84:
       environment:
-        php: '8.4'
+        php: '8.4.11'
       tests:
         override:
           - command: composer test
     php83:
       environment:
-        php: '8.3'
+        php: '8.3.16'
       tests:
         override:
           - command: composer test
     php82:
       environment:
-        php: '8.2'
+        php: '8.2.27'
       tests:
         override:
           - command: composer test
