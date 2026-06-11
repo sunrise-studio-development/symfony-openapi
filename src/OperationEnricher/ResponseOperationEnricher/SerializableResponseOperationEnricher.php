@@ -66,34 +66,34 @@ final class SerializableResponseOperationEnricher implements
             return;
         }
 
-        $status = null;
-        $formats = [];
+        $responseStatus = null;
+        $responseFormats = [];
 
         if ($route instanceof SymfonyRouteAwareInterface) {
-            $metadata = $this->responseMetadataResolver->resolveResponseMetadata(
+            $responseMetadata = $this->responseMetadataResolver->resolveResponseMetadata(
                 $route->getSymfonyRoute(),
                 $requestHandler,
             );
 
-            $status = $metadata->status;
-            $formats = $metadata->formats;
+            $responseStatus = $responseMetadata->status;
+            $responseFormats = $responseMetadata->formats;
         }
 
-        $status = $status ?? $this->defaultStatus;
-        $formats = $formats ?: $this->defaultFormats;
+        $responseStatus = $responseStatus ?? $this->defaultStatus;
+        $responseFormats = $responseFormats ?: $this->defaultFormats;
 
-        $operation['responses'][$status] = [
+        $operation['responses'][$responseStatus] = [
             'description' => $this->openApiConfiguration->defaultResponseDescription,
         ];
 
-        $contentSchema = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
+        $responseSchema = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
             $returnType,
             $requestHandler,
         );
 
-        foreach (self::getMimeTypesForFormats($formats) as $mimeType) {
-            $operation['responses'][$status]['content'][$mimeType] = [
-                'schema' => $contentSchema,
+        foreach (self::getMimeTypesForFormats($responseFormats) as $mimeType) {
+            $operation['responses'][$responseStatus]['content'][$mimeType] = [
+                'schema' => $responseSchema,
             ];
         }
     }

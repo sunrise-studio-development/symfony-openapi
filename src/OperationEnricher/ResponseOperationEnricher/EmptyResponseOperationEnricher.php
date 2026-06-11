@@ -52,20 +52,20 @@ final class EmptyResponseOperationEnricher implements
             return;
         }
 
-        $status = null;
+        $responseStatus = null;
 
         if ($route instanceof SymfonyRouteAwareInterface) {
-            $metadata = $this->responseMetadataResolver->resolveResponseMetadata(
+            $responseMetadata = $this->responseMetadataResolver->resolveResponseMetadata(
                 $route->getSymfonyRoute(),
                 $requestHandler,
             );
 
-            $status = $metadata->status;
+            $responseStatus = $responseMetadata->status;
         }
 
-        $status ??= $this->defaultStatus;
+        $responseStatus ??= $this->defaultStatus;
 
-        $operation['responses'][$status] = [
+        $operation['responses'][$responseStatus] = [
             'description' => $this->openApiConfiguration->defaultResponseDescription,
         ];
     }

@@ -17,9 +17,9 @@ final readonly class ResponseMetadataResolver implements ResponseMetadataResolve
         /** @var int|null $status */
         $status = $route->getOption('response_status');
 
-        /** @var array<array-key, string> $formats */
-        $formats = (array) $route->getOption('response_formats');
+        /** @var array<array-key, string>|string|null $formats */
+        $formats = $route->getOption('response_formats');
 
-        return new ResponseMetadata($status, $formats);
+        return new ResponseMetadata($status, (array) $formats);
     }
 }

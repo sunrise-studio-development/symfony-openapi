@@ -43,6 +43,8 @@ use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver
 use Sunrise\Symfony\OpenApi\RequestHandlerReflector;
 use Sunrise\Symfony\OpenApi\ResponseMetadataResolver;
 use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
+use Sunrise\Symfony\OpenApi\RouteMetadataResolver;
+use Sunrise\Symfony\OpenApi\RouteMetadataResolverInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -153,12 +155,6 @@ return static function (ContainerConfigurator $container): void {
 
     // ***
 
-    $services->set(OpenApiPathBuilderInterface::class, OpenApiPathBuilder::class);
-    $services->set(RequestHandlerReflectorInterface::class, RequestHandlerReflector::class);
-    $services->set(OpenApiDocumentManagerInterface::class, OpenApiDocumentManager::class);
-
-    // ***
-
     $services->set(OpenApiBuildDocumentCommand::class);
 
     $services->set(OpenApiController::class)
@@ -166,6 +162,13 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(SwaggerController::class)
         ->tag('controller.service_arguments');
+
+    // ***
+
+    $services->set(OpenApiDocumentManagerInterface::class, OpenApiDocumentManager::class);
+    $services->set(OpenApiPathBuilderInterface::class, OpenApiPathBuilder::class);
+    $services->set(RequestHandlerReflectorInterface::class, RequestHandlerReflector::class);
+    $services->set(RouteMetadataResolverInterface::class, RouteMetadataResolver::class);
 
     // **
 

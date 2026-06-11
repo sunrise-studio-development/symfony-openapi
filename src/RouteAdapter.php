@@ -15,6 +15,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     public function __construct(
         private string $name,
         private Route $route,
+        private RouteMetadata $metadata,
     ) {
     }
 
@@ -66,7 +67,9 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
 
     public function getAttribute(string $name, mixed $default = null): mixed
     {
-        return $this->route->hasDefault($name) ? $this->route->getDefault($name) : $default;
+        return $this->route->hasDefault($name)
+            ? $this->route->getDefault($name)
+            : $default;
     }
 
     /**
@@ -74,7 +77,9 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
      */
     public function withAddedAttributes(array $attributes): static
     {
-        return new self($this->name, (clone $this->route)->addDefaults($attributes));
+        $route = (clone $this->route)->addDefaults($attributes);
+
+        return new self($this->name, $route, $this->metadata);
     }
 
     /**
@@ -106,48 +111,27 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
      */
     public function getTags(): array
     {
-        /** @var array<array-key, string>|string|null $tags */
-        $tags = $this->route->getOption('tags');
-
-        return (array) $tags;
+        return $this->metadata->tags;
     }
 
     public function getSummary(): string
     {
-        /** @var string|null $summary */
-        $summary = $this->route->getOption('summary');
-
-        return (string) $summary;
+        return $this->metadata->summary;
     }
 
     public function getDescription(): string
     {
-        /** @var string|null $description */
-        $description = $this->route->getOption('description');
-
-        return (string) $description;
+        return $this->metadata->description;
     }
 
     public function isDeprecated(): bool
     {
-        foreach (['deprecated', 'is_deprecated', 'isDeprecated'] as $option) {
-            if ($this->route->hasOption($option)) {
-                return (bool) $this->route->getOption($option);
-            }
-        }
-
-        return false;
+        return $this->metadata->isDeprecated;
     }
 
     public function isApiRoute(): bool
     {
-        foreach (['api', 'is_api', 'isApi'] as $option) {
-            if ($this->route->hasOption($option)) {
-                return (bool) $this->route->getOption($option);
-            }
-        }
-
-        return \str_starts_with($this->route->getPath(), '/api/');
+        return $this->metadata->isApi;
     }
 
     public function getPattern(): ?string
