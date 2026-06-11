@@ -29,8 +29,8 @@ final readonly class RequestHandlerReflector implements RequestHandlerReflectorI
                     ? $reference
                     : $reference . '::__invoke';
 
-                /** @var ReflectionMethod */
-                return \PHP_VERSION_ID >= 80300
+                /** @psalm-var ReflectionMethod */
+                return \method_exists(ReflectionMethod::class, 'createFromMethodName')
                     ? ReflectionMethod::createFromMethodName($method)
                     : new ReflectionMethod($method);
             } catch (ReflectionException) {

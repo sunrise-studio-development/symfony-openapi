@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sunrise\Symfony\OpenApi\Controller;
+
+use RuntimeException;
+use Sunrise\Http\Router\OpenApi\Controller\OpenApiController as SunriseOpenApiController;
+use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
+use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+/**
+ * @since 1.0.0
+ */
+#[Route(SunriseOpenApiController::ROUTE_PATH, methods: ['GET'])]
+final readonly class OpenApiController
+{
+    public function __construct(
+        private OpenApiConfiguration $openApiConfiguration,
+        private OpenApiDocumentManagerInterface $openApiDocumentManager,
+    ) {
+    }
+
+    public function __invoke(): Response
+    {
+        $document = $this->openApiDocumentManager->openDocument();
+
+        try {
+            $content = \stream_get_contents($document);
+        } finally {
+            \fclose($document);
+        }
+
+        if ($content === false) {
+            throw new RuntimeException('The OpenAPI document could not be read.');
+        }
+
+        $contentType = $this->openApiConfiguration->documentMediaType->getIdentifier();
+        $contentType .= '; charset=UTF-8'; // OpenAPI documents are textual payloads...
+
+        return new Response($content, Response::HTTP_OK, [
+            'Content-Type' => $contentType,
+        ]);
+    }
+}
