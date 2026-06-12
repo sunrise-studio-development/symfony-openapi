@@ -278,6 +278,19 @@ Se uma route retorna um custom view object, o return type é usado como response
 
 Se o seu projeto envolve responses, por exemplo `{data: ..., meta: ...}`, substitua `ResponseMetadataResolverInterface` ou os response operation enrichers.
 
+## Annotations OpenAPI Para Symfony
+
+O pacote fornece Symfony-facing annotations para tarefas comuns de OpenAPI schema:
+
+| Annotation | Target | Propósito |
+| --- | --- | --- |
+| `#[Operation]` | class, method | Adiciona um manual OpenAPI operation fragment. |
+| `#[ItemType]` | property, parameter | Descreve array item type. |
+| `#[SchemaName]` | class | Sobrescreve component schema name. |
+| `#[PropertyName]` | property | Sobrescreve OpenAPI property name. |
+| `#[IgnoreProperty]` | property | Exclui uma property do object schema. |
+| `#[TimestampFormat]` | property | Sobrescreve date/time example format. |
+
 ## Fragmentos OpenAPI Manuais
 
 A maioria dos endpoints não deve precisar de OpenAPI fragments manuais. Para casos excepcionais, use `#[Operation]`:
@@ -308,19 +321,6 @@ public function list(): JsonResponse
 ```
 
 O fragment é mesclado com a generated operation.
-
-## Annotations OpenAPI Para Symfony
-
-O pacote fornece Symfony-facing annotations para tarefas comuns de OpenAPI schema:
-
-| Annotation | Target | Propósito |
-| --- | --- | --- |
-| `#[Operation]` | class, method | Adiciona um manual OpenAPI operation fragment. |
-| `#[ItemType]` | property, parameter | Descreve array item type. |
-| `#[SchemaName]` | class | Sobrescreve component schema name. |
-| `#[PropertyName]` | property | Sobrescreve OpenAPI property name. |
-| `#[IgnoreProperty]` | property | Exclui uma property do object schema. |
-| `#[TimestampFormat]` | property | Sobrescreve date/time example format. |
 
 ## Resolução De PHP Type Schemas
 
@@ -378,18 +378,3 @@ O pacote é formado por serviços substituíveis:
 | `OpenApiPathBuilderInterface` | Converte Symfony route paths para OpenAPI paths. |
 
 Substitua esses serviços no Symfony container quando as regras do projeto forem diferentes dos defaults.
-
-## Por Que Este Pacote Existe
-
-Muitas APIs são documentadas por longos blocos manuais de OpenAPI attributes. Isso funciona, mas frequentemente transforma a documentação em uma segunda implementação da mesma API.
-
-Queremos que o caminho padrão seja diferente:
-
-- routes descrevem paths e HTTP methods;
-- Symfony attributes descrevem request mapping;
-- DTOs descrevem input payloads;
-- view objects descrevem output payloads;
-- route options descrevem human-readable operation metadata;
-- OpenAPI-specific code é usado apenas quando o automatic model não é suficiente.
-
-Quanto mais próxima a documentação estiver do application code, mais difícil será os dois divergirem.

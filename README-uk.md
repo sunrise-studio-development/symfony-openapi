@@ -278,6 +278,19 @@ public function show(int $id): PetView
 
 Якщо проєкт обгортає responses, наприклад `{data: ..., meta: ...}`, замініть `ResponseMetadataResolverInterface` або response operation enrichers.
 
+## Symfony OpenAPI-Атрибути
+
+Пакет надає Symfony-facing annotations для типових OpenAPI schema tasks:
+
+| Annotation | Target | Призначення |
+| --- | --- | --- |
+| `#[Operation]` | class, method | Додає manual OpenAPI operation fragment. |
+| `#[ItemType]` | property, parameter | Описує array item type. |
+| `#[SchemaName]` | class | Перевизначає component schema name. |
+| `#[PropertyName]` | property | Перевизначає OpenAPI property name. |
+| `#[IgnoreProperty]` | property | Виключає property з object schema. |
+| `#[TimestampFormat]` | property | Перевизначає date/time example format. |
+
 ## Ручні OpenAPI-Фрагменти
 
 Більшості endpoints не потрібні ручні OpenAPI fragments. Для виняткових випадків використовуйте `#[Operation]`:
@@ -308,19 +321,6 @@ public function list(): JsonResponse
 ```
 
 Фрагмент об'єднується з generated operation.
-
-## Symfony OpenAPI-Атрибути
-
-Пакет надає Symfony-facing annotations для типових OpenAPI schema tasks:
-
-| Annotation | Target | Призначення |
-| --- | --- | --- |
-| `#[Operation]` | class, method | Додає manual OpenAPI operation fragment. |
-| `#[ItemType]` | property, parameter | Описує array item type. |
-| `#[SchemaName]` | class | Перевизначає component schema name. |
-| `#[PropertyName]` | property | Перевизначає OpenAPI property name. |
-| `#[IgnoreProperty]` | property | Виключає property з object schema. |
-| `#[TimestampFormat]` | property | Перевизначає date/time example format. |
 
 ## Розв'язання PHP Type Schemas
 
@@ -378,18 +378,3 @@ public function list(): JsonResponse
 | `OpenApiPathBuilderInterface` | Перетворює Symfony route paths на OpenAPI paths. |
 
 Замінюйте ці сервіси в Symfony container, якщо правила проєкту відрізняються від defaults.
-
-## Навіщо Існує Цей Пакет
-
-Багато API документуються довгими ручними OpenAPI attribute blocks. Це працює, але документація часто стає другою реалізацією того самого API.
-
-Ми хочемо інший шлях за замовчуванням:
-
-- routes описують paths і HTTP methods;
-- Symfony attributes описують request mapping;
-- DTO описують input payloads;
-- view objects описують output payloads;
-- route options описують human-readable operation metadata;
-- OpenAPI-specific code використовується тільки там, де automatic model недостатньо.
-
-Чим ближче документація до application code, тим складніше їм розійтися.

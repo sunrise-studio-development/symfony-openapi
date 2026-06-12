@@ -278,6 +278,19 @@ public function show(int $id): PetView
 
 如果项目会包装 responses，例如 `{data: ..., meta: ...}`，请替换 `ResponseMetadataResolverInterface` 或 response operation enrichers。
 
+## Symfony OpenAPI Annotations
+
+该包为常见 OpenAPI schema tasks 提供 Symfony-facing annotations:
+
+| Annotation | Target | 用途 |
+| --- | --- | --- |
+| `#[Operation]` | class, method | 添加 manual OpenAPI operation fragment. |
+| `#[ItemType]` | property, parameter | 描述 array item type. |
+| `#[SchemaName]` | class | 覆盖 component schema name. |
+| `#[PropertyName]` | property | 覆盖 OpenAPI property name. |
+| `#[IgnoreProperty]` | property | 从 object schema 排除 property. |
+| `#[TimestampFormat]` | property | 覆盖 date/time example format. |
+
 ## 手写 OpenAPI Fragments
 
 大多数 endpoints 不需要手写 OpenAPI fragments。特殊场景可以使用 `#[Operation]`:
@@ -308,19 +321,6 @@ public function list(): JsonResponse
 ```
 
 该 fragment 会合并到 generated operation。
-
-## Symfony OpenAPI Annotations
-
-该包为常见 OpenAPI schema tasks 提供 Symfony-facing annotations:
-
-| Annotation | Target | 用途 |
-| --- | --- | --- |
-| `#[Operation]` | class, method | 添加 manual OpenAPI operation fragment. |
-| `#[ItemType]` | property, parameter | 描述 array item type. |
-| `#[SchemaName]` | class | 覆盖 component schema name. |
-| `#[PropertyName]` | property | 覆盖 OpenAPI property name. |
-| `#[IgnoreProperty]` | property | 从 object schema 排除 property. |
-| `#[TimestampFormat]` | property | 覆盖 date/time example format. |
 
 ## PHP Type Schema Resolution
 
@@ -378,18 +378,3 @@ Symfony Serializer 参考: [Serializer](https://symfony.com/doc/current/serializ
 | `OpenApiPathBuilderInterface` | 将 Symfony route paths 转换为 OpenAPI paths. |
 
 当项目规则与 defaults 不同，可以在 Symfony container 中替换这些 services。
-
-## 为什么需要这个包
-
-很多 API 使用很长的手写 OpenAPI attribute blocks 来编写文档。这可以工作，但文档往往会变成同一个 API 的第二套实现。
-
-我们希望默认路径不同:
-
-- routes 描述 paths 和 HTTP methods;
-- Symfony attributes 描述 request mapping;
-- DTOs 描述 input payloads;
-- view objects 描述 output payloads;
-- route options 描述 human-readable operation metadata;
-- OpenAPI-specific code 只在 automatic model 不够时使用。
-
-文档越接近 application code，两者越不容易偏离。

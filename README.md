@@ -278,6 +278,19 @@ If a route returns a custom view object, the return type is resolved as the resp
 
 If your project wraps responses, for example `{data: ..., meta: ...}`, replace `ResponseMetadataResolverInterface` or the response operation enrichers.
 
+## Symfony OpenAPI Annotations
+
+The package provides Symfony-facing annotations for common OpenAPI schema tasks:
+
+| Annotation | Target | Purpose |
+| --- | --- | --- |
+| `#[Operation]` | class, method | Adds a manual OpenAPI operation fragment. |
+| `#[ItemType]` | property, parameter | Describes array item type. |
+| `#[SchemaName]` | class | Overrides component schema name. |
+| `#[PropertyName]` | property | Overrides OpenAPI property name. |
+| `#[IgnoreProperty]` | property | Excludes a property from object schema. |
+| `#[TimestampFormat]` | property | Overrides date/time example format. |
+
 ## Manual OpenAPI Fragments
 
 Most endpoints should not need manual OpenAPI fragments. For exceptional cases, use `#[Operation]`:
@@ -308,19 +321,6 @@ public function list(): JsonResponse
 ```
 
 The fragment is merged into the generated operation.
-
-## Symfony OpenAPI Annotations
-
-The package provides Symfony-facing annotations for common OpenAPI schema tasks:
-
-| Annotation | Target | Purpose |
-| --- | --- | --- |
-| `#[Operation]` | class, method | Adds a manual OpenAPI operation fragment. |
-| `#[ItemType]` | property, parameter | Describes array item type. |
-| `#[SchemaName]` | class | Overrides component schema name. |
-| `#[PropertyName]` | property | Overrides OpenAPI property name. |
-| `#[IgnoreProperty]` | property | Excludes a property from object schema. |
-| `#[TimestampFormat]` | property | Overrides date/time example format. |
 
 ## PHP Type Schema Resolution
 
@@ -378,18 +378,3 @@ The package is built from replaceable services:
 | `OpenApiPathBuilderInterface` | Converts Symfony route paths to OpenAPI paths. |
 
 Replace these services in the Symfony container when project rules differ from the defaults.
-
-## Why This Package Exists
-
-Many APIs are documented by long manual OpenAPI attribute blocks. That works, but it often makes documentation a second implementation of the same API.
-
-We want the default path to be different:
-
-- routes describe paths and HTTP methods;
-- Symfony attributes describe request mapping;
-- DTOs describe input payloads;
-- view objects describe output payloads;
-- route options describe human-readable operation metadata;
-- OpenAPI-specific code is used only when the automatic model is not enough.
-
-The closer documentation is to application code, the harder it is for them to drift apart.
