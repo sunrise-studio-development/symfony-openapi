@@ -6,11 +6,11 @@
 
 Языки: [English](README.md) | [Русский](README-ru.md) | [Українська](README-uk.md) | [Français](README-fr.md) | [Deutsch](README-de.md)
 
-`sunrise-studio/symfony-openapi` генерирует OpenAPI-документ из Symfony routes, сигнатур контроллеров, атрибутов Symfony HTTP Kernel и PHP DTO/View классов.
+`sunrise-studio/symfony-openapi` генерирует OpenAPI-документ из маршрутов Symfony, сигнатур контроллеров, атрибутов Symfony HTTP Kernel и PHP DTO/View классов.
 
-Наша цель проста: разработчик приложения не должен писать большие блоки OpenAPI-атрибутов для обычных API endpoint-ов. Мы считаем, что документация должна следовать уже существующему коду: routes, input DTO, query objects, uploaded files, path variables и response view objects. Ручные OpenAPI-фрагменты нужны только для исключительных случаев.
+Наша цель проста: разработчик приложения не должен писать большие блоки OpenAPI-атрибутов для обычных API endpoints. Мы считаем, что документация должна следовать уже существующему коду, который описывает API: маршрутам, input DTO, query objects, uploaded files, path variables и response view objects. Ручные OpenAPI-фрагменты нужны только для исключительных случаев.
 
-Пакет построен на OpenAPI-механизмах [Sunrise HTTP Router](https://github.com/sunrise-php/http-router), но Symfony API живет в namespace `Sunrise\Symfony\OpenApi`.
+Пакет построен на OpenAPI-механизмах [Sunrise HTTP Router](https://github.com/sunrise-php/http-router), но Symfony-facing API живет в namespace `Sunrise\Symfony\OpenApi`.
 
 ## Установка
 
@@ -36,16 +36,16 @@ openapi:
   resource: '@OpenApiBundle/config/routes.php'
 ```
 
-Будут добавлены два маршрута:
+Это импортирует два маршрута:
 
 | Route | Controller | Назначение |
 | --- | --- | --- |
-| `GET /openapi` | `OpenApiController` | Отдает сгенерированный OpenAPI JSON. |
+| `GET /openapi` | `OpenApiController` | Отдает сгенерированный OpenAPI JSON document. |
 | `GET /swagger.html` | `SwaggerController` | Отдает Swagger UI, настроенный на `/openapi`. |
 
-Оба маршрута зарегистрированы с `api: false`, поэтому они не попадают в генерируемую документацию.
+Оба маршрута зарегистрированы с `api: false`, поэтому они не попадают в генерируемую API-документацию.
 
-Если нужен только один маршрут:
+Если нужен только один маршрут, импортируйте конкретный route-файл напрямую:
 
 ```yaml
 openapi_document:
@@ -62,7 +62,7 @@ swagger_ui:
 
 ## Базовая конфигурация
 
-Пример конфигурации приложения:
+Типовая конфигурация приложения:
 
 ```yaml
 # config/packages/openapi.yaml
@@ -76,31 +76,33 @@ parameters:
   openapi.default_timestamp_format: !php/const DateTimeInterface::RFC3339_EXTENDED
 ```
 
-Основные параметры:
+Полезные параметры:
 
 | Параметр | По умолчанию | Назначение |
 | --- | --- | --- |
-| `openapi.initial_document` | OpenAPI version + `API` title | Базовый документ, к которому добавляются paths и schemas. |
+| `openapi.initial_document` | OpenAPI version + `API` title | Базовый документ, к которому добавляются generated paths и schemas. |
 | `openapi.initial_operation` | `responses: []` | Базовая operation для каждого маршрута. |
-| `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Файл, куда команда сохраняет документ. |
-| `openapi.default_timestamp_format` | Sunrise default timestamp format | Формат примеров для `DateTimeImmutable`. |
-| `openapi.default_empty_response_status` | `204` | Статус для controller methods с `void`. |
-| `openapi.default_response_status` | `200` | Статус для сериализуемых return objects. |
-| `openapi.default_response_formats` | `['json']` | Форматы Symfony для сериализуемых return objects. |
+| `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Файл, куда команда записывает сгенерированный документ. |
+| `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Формат PHP `date()` для генерации OpenAPI `example` у схем даты/времени. |
+| `openapi.default_empty_response_status` | `204` | Статус по умолчанию для controller methods с `void`. |
+| `openapi.default_response_status` | `200` | Статус по умолчанию для сериализуемых return objects. |
+| `openapi.default_response_formats` | `['json']` | Форматы Symfony по умолчанию для сериализуемых return objects. |
 
-`SwaggerConfiguration` можно заменить как сервис, если нужны другие Swagger UI assets, template variables или OpenAPI URL.
+`SwaggerConfiguration` можно заменить или настроить как сервис, если нужны свои Swagger UI assets, template variables или другой OpenAPI URL.
 
 ## Генерация документа
+
+Запустите:
 
 ```bash
 php bin/console openapi:build-document
 ```
 
-Команда читает Symfony `RouterInterface`, получает metadata маршрутов, оставляет только API routes, адаптирует их для Sunrise OpenAPI builder и сохраняет документ в `openapi.document_filename`.
+Команда читает коллекцию маршрутов Symfony, получает metadata маршрутов, оставляет только API routes, адаптирует их для Sunrise OpenAPI document builder и сохраняет документ в `openapi.document_filename`.
 
-После генерации:
+После этого:
 
-- `/openapi` возвращает JSON-документ;
+- `/openapi` возвращает сгенерированный JSON document.
 - `/swagger.html` открывает Swagger UI.
 
 ## Route Options
@@ -127,21 +129,21 @@ final readonly class PetController
 }
 ```
 
-Поддерживаемые options:
+Поддерживаемые route options:
 
-| Option | Тип | Назначение |
+| Option | Type | Назначение |
 | --- | --- | --- |
 | `tags` | `string|string[]` | OpenAPI operation tags. |
 | `summary` | `string` | OpenAPI operation summary. |
 | `description` | `string` | OpenAPI operation description. |
-| `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Помечает operation deprecated. |
-| `api`, `is_api`, `isApi` | `bool` | Включает или исключает route из документа. |
-| `response_status` | `int` | Переопределяет response status. |
-| `response_formats` | `string|string[]` | Symfony formats, например `json` или `xml`. |
+| `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Помечает operation как deprecated. |
+| `api`, `is_api`, `isApi` | `bool` | Включает route в документ или исключает его. |
+| `response_status` | `int` | Переопределяет сгенерированный response status. |
+| `response_formats` | `string|string[]` | Symfony response formats, например `json` или `xml`. |
 
 Если API option не задан, маршруты с path `/api/...` считаются API routes.
 
-Если вы не хотите хранить tags, summaries, descriptions и API filtering в route options, замените `RouteMetadataResolverInterface`.
+Если вы не хотите хранить tags, summaries, descriptions или API filtering в route options, замените `RouteMetadataResolverInterface` своим сервисом.
 
 ## Symfony Attributes
 
@@ -162,28 +164,72 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 
 Поведение:
 
-- PHP type параметра становится request schema;
-- `acceptFormat` преобразуется в media type, например `json` в `application/json`;
-- required PHP parameter делает request body required;
-- для array payload `MapRequestPayload(type: SomeDto::class)` описывает item type.
+- PHP type параметра становится request schema.
+- `acceptFormat` преобразуется через Symfony request format в media type, например `json` в `application/json`.
+- Если параметр required в PHP, OpenAPI request body тоже помечается required.
+- Для array payload `MapRequestPayload(type: SomeDto::class)` описывает item type.
 
 ### Query Object
 
-`#[MapQueryString]` описывает query object. Если `key` равен `null`, объект описывает весь query string с `style: form`. Если `key` задан, используется `style: deepObject`.
+`#[MapQueryString]` описывает query object.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+
+public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
+{
+    // ...
+}
+```
+
+Если `key` равен `null`, объект описывается как весь query string с `style: form`. Если `key` задан, параметр использует `style: deepObject`.
 
 ### Query Parameter
 
-`#[MapQueryParameter]` описывает scalar, enum, date, UID или array query parameters. Variadic parameters описываются как arrays и не являются required.
+`#[MapQueryParameter]` описывает scalar, enum, date, UID или array query parameters.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+
+public function find(
+    #[MapQueryParameter] PetStatus $status,
+    #[MapQueryParameter] string ...$tags,
+): JsonResponse {
+    // ...
+}
+```
+
+Variadic parameters описываются как arrays и не помечаются required.
 
 ### Uploaded Files
 
-`#[MapUploadedFile]` добавляет `multipart/form-data` request body с binary fields. Variadic uploaded files описываются как array of binary strings и не являются required.
+`#[MapUploadedFile]` добавляет `multipart/form-data` request body с binary fields.
+
+```php
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
+
+public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): JsonResponse
+{
+    // ...
+}
+```
+
+Variadic uploaded files описываются как array of binary strings и не помечаются required.
 
 ### Path Variables
 
-Path variables читаются из скомпилированных Symfony routes. Requirements превращаются в OpenAPI schema patterns.
+Symfony path variables читаются из скомпилированных маршрутов. Requirements превращаются в OpenAPI schema patterns.
 
-Поддерживаемые типы параметров:
+```php
+#[Route('/api/pets/{petId}', requirements: ['petId' => '\d+'])]
+public function show(int $petId): PetView
+{
+    // ...
+}
+```
+
+Поддерживаемые reflected parameter types для path variables:
 
 - `bool`
 - `int`
@@ -193,29 +239,48 @@ Path variables читаются из скомпилированных Symfony ro
 - `DateTimeInterface`
 - `Symfony\Component\Uid\AbstractUid`
 
-Простые route mapping aliases поддерживаются, например `['id' => 'petId']`. Entity-style mappings вроде `{id:pet.id}` не описываются как object schemas; публичная переменная маршрута остается строкой, если не найден поддерживаемый scalar parameter.
+Symfony route mapping aliases поддерживаются для простых mappings, например `['id' => 'petId']`. Entity-style mappings вроде `{id:pet.id}` намеренно не описываются как object schemas; публичная path variable все равно документируется как string, если не найден поддерживаемый scalar parameter.
 
 ### Date and Time
 
-`#[MapDateTime(format: ...)]` меняет example для timestamp parameter.
+`#[MapDateTime(format: ...)]` меняет сгенерированный date/time example для параметров контроллера.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapDateTime;
+
+public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date): JsonResponse
+{
+    // ...
+}
+```
 
 ## Response Generation
 
-Поведение по умолчанию:
+Поведение responses по умолчанию намеренно маленькое и предсказуемое:
 
-| Return type контроллера | Response |
+| Controller return type | Generated response |
 | --- | --- |
 | `void` | Empty response, default status `204`. |
-| Symfony `Response` subclass | Автоматический content не генерируется. Используйте `#[Operation]` для ручных случаев. |
+| Symfony `Response` subclass | Автоматический response content не генерируется. Используйте `#[Operation]` для ручных случаев. |
 | Любой другой named return type | Serialized response body, default status `200`, default format `json`. |
 
-`response_status` и `response_formats` можно переопределить в route options.
+Пример:
 
-Если проект использует wrapper-ответы, например `{data: ..., meta: ...}`, замените `ResponseMetadataResolverInterface` или response operation enrichers.
+```php
+#[Route('/api/pets/{id}', options: ['response_status' => 200])]
+public function show(int $id): PetView
+{
+    // ...
+}
+```
+
+Если route возвращает custom view object, return type проходит через PHP type schema resolver system и используется как response schema.
+
+Если проект оборачивает responses, например `{data: ..., meta: ...}`, замените `ResponseMetadataResolverInterface` или response operation enrichers своими сервисами.
 
 ## Manual OpenAPI Fragments
 
-Для исключительных случаев используйте `#[Operation]`:
+Большинству endpoints не нужны ручные OpenAPI fragments. Для исключительных случаев используйте `#[Operation]`:
 
 ```php
 use Sunrise\Http\Router\OpenApi\Type;
@@ -242,22 +307,24 @@ public function list(): JsonResponse
 }
 ```
 
-Фрагмент merge-ится в operation через Sunrise `OpenApiDocumentManager`.
+Фрагмент merge-ится в generated operation через Sunrise `OpenApiDocumentManager`.
 
 ## Symfony OpenAPI Annotations
 
+Пакет предоставляет Symfony-facing annotations, чтобы application code не импортировал router или hydrator namespaces для типовых OpenAPI schema tasks:
+
 | Annotation | Target | Назначение |
 | --- | --- | --- |
-| `#[Operation]` | class, method | Ручной OpenAPI operation fragment. |
-| `#[ItemType]` | property, parameter | Item type для arrays. |
-| `#[SchemaName]` | class | Имя component schema. |
-| `#[PropertyName]` | property | Имя OpenAPI property. |
-| `#[IgnoreProperty]` | property | Исключает property из schema. |
-| `#[TimestampFormat]` | property | Формат timestamp example. |
-
-Эти annotations — Symfony-facing wrappers вокруг Sunrise OpenAPI/Hydrator concepts.
+| `#[Operation]` | class, method | Добавляет manual OpenAPI operation fragment. |
+| `#[ItemType]` | property, parameter | Описывает array item type. |
+| `#[SchemaName]` | class | Переопределяет component schema name. |
+| `#[PropertyName]` | property | Переопределяет OpenAPI property name. |
+| `#[IgnoreProperty]` | property | Исключает property из object schema. |
+| `#[TimestampFormat]` | property | Переопределяет date/time example format. |
 
 ## PHP Type Schema Resolution
+
+Bundle явно регистрирует Sunrise schema resolvers и заменяет timestamp resolver на Symfony-aware реализацию.
 
 Активные resolvers:
 
@@ -272,51 +339,59 @@ public function list(): JsonResponse
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-Для своих типов реализуйте `Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface` и зарегистрируйте resolver в `OpenApiPhpTypeSchemaResolverManagerInterface`.
+Если проекту нужна custom schema для своего типа, реализуйте `Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface` и зарегистрируйте resolver в сервисе `OpenApiPhpTypeSchemaResolverManagerInterface`.
 
 ## Object Schema Resolver
 
-`ObjectPhpTypeSchemaResolver` читает PHP classes напрямую:
+`Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ObjectPhpTypeSchemaResolver` — основной resolver для DTO и view objects.
+
+Он читает PHP classes напрямую:
 
 - поддерживаются instantiable non-internal classes;
-- свойства рефлектятся напрямую;
+- public/private/protected properties рефлектятся напрямую;
 - property types становятся OpenAPI property schemas;
-- свойства без default value попадают в `required`;
-- scalar/backed enum default values добавляются в schema;
-- constructor-promoted defaults поддерживаются;
-- `#[SchemaName]`, `#[PropertyName]`, `#[IgnoreProperty]`, `#[ItemType]`, `#[TimestampFormat]` влияют на schema.
+- properties без default value помечаются required;
+- property default values добавляются, если это scalar или backed enum;
+- constructor-promoted property defaults поддерживаются;
+- `#[SchemaName]` меняет component schema name;
+- `#[PropertyName]` меняет property name;
+- `#[IgnoreProperty]` исключает property;
+- `#[ItemType]` описывает array properties;
+- `#[TimestampFormat]` меняет date/time examples.
 
-Symfony Serializer metadata не используется. Resolver не читает serializer groups, getters, setters, `SerializedName`, name converters и camelCase/snake_case rules.
+Этот resolver не использует Symfony Serializer metadata. Он не читает serializer groups, getters, setters, `SerializedName`, name converters или camelCase/snake_case conversion rules.
 
-Мы рекомендуем явные DTO и View classes с типизированными свойствами. Если нужна другая внешняя форма, создайте отдельный View object и замапьте в него domain object.
+Мы рекомендуем явные DTO и View classes с типизированными properties. Если нужна другая внешняя форма, создайте новый View object и замапьте в него domain object. Это упрощает поиск, refactoring и schema generation.
 
-Если нужна полноценная поддержка Symfony Serializer, откройте issue. Мы рассмотрим optional resolver или strategy layer.
+Если вашей команде нужна first-class поддержка Symfony Serializer, откройте issue. Мы рассмотрим ее как optional resolver или strategy layer.
 
 Документация Symfony Serializer: [Serializer](https://symfony.com/doc/current/serializer.html).
 
 ## Extension Points
 
+Пакет намеренно собран из маленьких сервисов:
+
 | Service/interface | Назначение |
 | --- | --- |
-| `RouteMetadataResolverInterface` | Tags, summary, description, deprecation и API filtering. |
-| `ResponseMetadataResolverInterface` | Response status и response formats. |
-| `OpenApiOperationEnricherInterface` | Request parameters, request bodies, responses или custom operation data. |
-| `OpenApiPhpTypeSchemaResolverInterface` | PHP type to OpenAPI schema. |
-| `OpenApiPathBuilderInterface` | Symfony route path to OpenAPI path. |
+| `RouteMetadataResolverInterface` | Управляет tags, summary, description, deprecation и API filtering. |
+| `ResponseMetadataResolverInterface` | Управляет response status и response formats. |
+| `OpenApiOperationEnricherInterface` | Добавляет request parameters, request bodies, responses или custom operation data. |
+| `OpenApiPhpTypeSchemaResolverInterface` | Преобразует PHP types в OpenAPI schemas. |
+| `OpenApiPathBuilderInterface` | Преобразует Symfony route paths в OpenAPI paths. |
 
-Любой из этих сервисов можно заменить в Symfony container.
+Эти сервисы можно заменить в Symfony container, если правила проекта отличаются от defaults.
 
-## Зачем нужен пакет
+## Зачем существует этот пакет
 
-Мы часто видели API, где документация написана длинными ручными OpenAPI attributes. Это работает, но документация превращается во вторую реализацию API.
+Мы видели много API, документированных длинными ручными OpenAPI attribute blocks. Это работает, но документация часто становится второй реализацией того же самого API.
 
-Мы хотим другой путь:
+Мы хотим другой нормальный путь:
 
 - routes описывают paths и HTTP methods;
 - Symfony attributes описывают request mapping;
 - DTO описывают input payloads;
-- View objects описывают output payloads;
-- route options описывают human metadata;
-- OpenAPI-specific code используется только там, где автоматической модели не хватает.
+- view objects описывают output payloads;
+- route options описывают human operation metadata;
+- OpenAPI-specific code используется только там, где automatic model недостаточно.
 
-Чем ближе документация к реальному коду приложения, тем сложнее им разойтись.
+Чем ближе документация к реальному application code, тем сложнее им разойтись.

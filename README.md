@@ -83,7 +83,7 @@ Useful parameters:
 | `openapi.initial_document` | OpenAPI version + `API` title | Base document merged with generated paths and schemas. |
 | `openapi.initial_operation` | `responses: []` | Base operation used for every route. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Where the command writes the generated document. |
-| `openapi.default_timestamp_format` | Sunrise default timestamp format | Used for `DateTimeImmutable` examples. |
+| `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | PHP `date()` format used to generate OpenAPI `example` values for date/time schemas. |
 | `openapi.default_empty_response_status` | `204` | Default status for `void` controller methods. |
 | `openapi.default_response_status` | `200` | Default status for serialized return objects. |
 | `openapi.default_response_formats` | `['json']` | Default Symfony response formats for serialized return objects. |
@@ -98,7 +98,7 @@ Run:
 php bin/console openapi:build-document
 ```
 
-The command reads Symfony `RouterInterface`, resolves route metadata, keeps only API routes, adapts them to the Sunrise OpenAPI document builder, and saves the document to `openapi.document_filename`.
+The command reads the Symfony route collection, resolves route metadata, keeps only API routes, adapts them to the Sunrise OpenAPI document builder, and saves the document to `openapi.document_filename`.
 
 After that:
 
@@ -243,7 +243,7 @@ Symfony route mapping aliases are supported for simple mappings such as `['id' =
 
 ### Date and Time
 
-`#[MapDateTime(format: ...)]` changes the generated timestamp example for controller parameters.
+`#[MapDateTime(format: ...)]` changes the generated date/time example for controller parameters.
 
 ```php
 use Symfony\Component\HttpKernel\Attribute\MapDateTime;
@@ -320,7 +320,7 @@ The package provides Symfony-facing annotations so application code does not nee
 | `#[SchemaName]` | class | Overrides component schema name. |
 | `#[PropertyName]` | property | Overrides OpenAPI property name. |
 | `#[IgnoreProperty]` | property | Excludes a property from object schema. |
-| `#[TimestampFormat]` | property | Overrides timestamp example format. |
+| `#[TimestampFormat]` | property | Overrides date/time example format. |
 
 ## PHP Type Schema Resolution
 
@@ -357,7 +357,7 @@ It reads PHP classes directly:
 - `#[PropertyName]` changes property name;
 - `#[IgnoreProperty]` excludes a property;
 - `#[ItemType]` describes array properties;
-- `#[TimestampFormat]` changes timestamp examples.
+- `#[TimestampFormat]` changes date/time examples.
 
 This resolver does not use Symfony Serializer metadata. It does not read serializer groups, getters, setters, `SerializedName`, name converters, or camelCase/snake_case conversion rules.
 
