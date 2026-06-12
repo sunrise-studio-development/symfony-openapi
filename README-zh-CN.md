@@ -6,11 +6,11 @@
 
 语言: [🇬🇧 English](README.md) | [🇨🇳 简体中文](README-zh-CN.md) | [🇪🇸 Español](README-es.md) | [🇵🇹 Português](README-pt.md) | [🇷🇺 Русский](README-ru.md) | [🇺🇦 Українська](README-uk.md)
 
-`sunrise-studio/symfony-openapi` 根据 Symfony 路由、控制器签名、Symfony HttpKernel attributes，以及带类型的 PHP DTO/View 类生成 OpenAPI 文档。
+此包根据 Symfony 路由、控制器签名、Symfony HttpKernel attributes，以及带类型的 DTO/View 类生成 OpenAPI 文档。
 
 目标是让 API 文档尽量贴近应用代码。普通 endpoints 不应该需要大量 `#[OA\...]` 代码块。路由描述 paths 和 methods，Symfony attributes 描述 request mapping，DTO 描述输入数据，view objects 描述输出数据，route options 描述 operation metadata。手写 OpenAPI fragments 只用于特殊场景。
 
-Symfony API 位于 `Sunrise\Symfony\OpenApi` namespace。包内部使用 [Sunrise HTTP Router](https://github.com/sunrise-php/http-router) 的 OpenAPI engine。
+API 位于 `Sunrise\Symfony\OpenApi` namespace。包内部使用 [Sunrise HTTP Router](https://github.com/sunrise-php/http-router) 的 OpenAPI engine。
 
 ## 安装
 
@@ -43,7 +43,7 @@ openapi:
 | `GET /openapi` | `OpenApiController` | 返回生成的 OpenAPI JSON document. |
 | `GET /swagger.html` | `SwaggerController` | 返回配置为读取 `/openapi` 的 Swagger UI. |
 
-这两个路由都使用 `api: false`，因此不会进入生成的 API document。
+这两个路由不会进入生成的 API document：它们没有设置 `api: true`，并且 paths 不以 `/api/` 开头。
 
 如果只需要其中一个路由，可以直接导入对应文件:
 
@@ -68,7 +68,7 @@ Symfony 参考文档:
 # config/packages/openapi.yaml
 parameters:
   openapi.initial_document:
-    openapi: !php/const Sunrise\Http\Router\OpenApi\OpenApiConfiguration::VERSION
+    openapi: 3.1.1
     info:
       title: API
       version: 1.0.0
@@ -98,7 +98,7 @@ parameters:
 php bin/console openapi:build-document
 ```
 
-该命令读取 Symfony route collection，解析 route metadata，保留 API routes，构建 OpenAPI document，并写入 `openapi.document_filename`。
+该命令读取 route collection，解析 route metadata，保留 API routes，构建 OpenAPI document，并写入 `openapi.document_filename`。
 
 生成后:
 
@@ -133,13 +133,13 @@ final readonly class PetController
 
 | Option | Type | 用途 |
 | --- | --- | --- |
-| `tags` | `string|string[]` | OpenAPI operation tags. |
+| `tags` | `string\|string[]` | OpenAPI operation tags. |
 | `summary` | `string` | OpenAPI operation summary. |
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | 将 operation 标记为 deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | 将 route 包含到 generated document 中或从中排除. |
 | `response_status` | `int` | 覆盖 generated response status. |
-| `response_formats` | `string|string[]` | Symfony response formats，例如 `json` 或 `xml`. |
+| `response_formats` | `string\|string[]` | Symfony response formats，例如 `json` 或 `xml`. |
 
 如果没有设置 API option，path 以 `/api/` 开头的 routes 会被视为 API routes。
 
@@ -148,74 +148,6 @@ final readonly class PetController
 ## Symfony Attributes
 
 该包支持 Symfony controller value resolver attributes。参见 Symfony 的 [controller value resolver documentation](https://symfony.com/doc/current/controller/value_resolver.html)。
-
-### Request Body
-
-`#[MapRequestPayload]` 创建 OpenAPI `requestBody`。
-
-```php
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-
-public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetRequest $request): PetView
-{
-    // ...
-}
-```
-
-行为:
-
-- PHP parameter type 会成为 request schema.
-- `acceptFormat` 从 Symfony request format 转换为 media type，例如 `json` 转为 `application/json`.
-- 如果 PHP parameter 是 required，OpenAPI request body 也是 required.
-- 对于 array payloads，`MapRequestPayload(type: SomeDto::class)` 描述 item type.
-
-### Query Object
-
-`#[MapQueryString]` 描述 query object。
-
-```php
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
-
-public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
-{
-    // ...
-}
-```
-
-如果 `key` 为 `null`，对象会被描述为整个 query string，使用 `style: form`。如果设置了 `key`，参数使用 `style: deepObject`。
-
-### Query Parameter
-
-`#[MapQueryParameter]` 描述 scalar、enum、date/time、UID 或 array query parameters。
-
-```php
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-
-public function find(
-    #[MapQueryParameter] PetStatus $status,
-    #[MapQueryParameter] string ...$tags,
-): JsonResponse {
-    // ...
-}
-```
-
-Variadic parameters 会被描述为 arrays，并且不会标记为 required。
-
-### Uploaded Files
-
-`#[MapUploadedFile]` 添加带 binary fields 的 `multipart/form-data` request body。
-
-```php
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
-
-public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): JsonResponse
-{
-    // ...
-}
-```
-
-Variadic uploaded files 会被描述为 binary strings 的 array，并且不会标记为 required。
 
 ### Path Variables
 
@@ -241,6 +173,75 @@ Path variables 支持的 reflected parameter types:
 
 简单的 Symfony route mapping aliases 会被支持，例如 `['id' => 'petId']`。`{id:pet.id}` 这类 entity-style mappings 不会被描述为 object schemas；如果找不到支持的 scalar parameter，公开的 path variable 会被文档化为 string。
 
+### Query Parameter
+
+`#[MapQueryParameter]` 描述 scalar、enum、date/time、UID 或 array query parameters。
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+
+public function find(
+    #[MapQueryParameter] PetStatus $status,
+    #[MapQueryParameter] string ...$tags,
+): JsonResponse {
+    // ...
+}
+```
+
+Variadic parameters 会被描述为 arrays，并且不会标记为 required。
+
+### Query Object
+
+`#[MapQueryString]` 描述 query object。
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+
+public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
+{
+    // ...
+}
+```
+
+如果 `key` 为 `null`，对象会被描述为整个 query string，使用 `style: form`。如果设置了 `key`，参数使用 `style: deepObject`。
+
+### Request Body
+
+`#[MapRequestPayload]` 创建 OpenAPI `requestBody`。
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+
+public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetRequest $request): PetView
+{
+    // ...
+}
+```
+
+行为:
+
+- PHP parameter type 会成为 request schema.
+- `acceptFormat` 是可选的。如果省略，将使用 default accept formats；默认是 `json`.
+- `acceptFormat` 从 Symfony request format 转换为 media type，例如 `json` 转为 `application/json`.
+- 如果 PHP parameter 是 required，OpenAPI request body 也是 required.
+- 对于 array payloads，`MapRequestPayload(type: SomeDto::class)` 描述 item type.
+
+### Uploaded Files
+
+`#[MapUploadedFile]` 添加带 binary fields 的 `multipart/form-data` request body。
+
+```php
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
+
+public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): JsonResponse
+{
+    // ...
+}
+```
+
+Variadic uploaded files 会被描述为 binary strings 的 array，并且不会标记为 required。
+
 ### Date And Time
 
 `#[MapDateTime(format: ...)]` 修改 controller parameters 的 generated date/time example。
@@ -253,6 +254,8 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
     // ...
 }
 ```
+
+`format` 参数是可选的。如果省略，将使用 default timestamp format。
 
 ## 响应生成
 
@@ -278,11 +281,11 @@ public function show(int $id): PetView
 
 如果项目会包装 responses，例如 `{data: ..., meta: ...}`，请替换 `ResponseMetadataResolverInterface` 或 response operation enrichers。
 
-## Symfony OpenAPI Annotations
+## OpenAPI Attributes
 
-该包为常见 OpenAPI schema tasks 提供 Symfony-facing annotations:
+该包为常见 schema tasks 提供 OpenAPI attributes:
 
-| Annotation | Target | 用途 |
+| Attribute | Target | 用途 |
 | --- | --- | --- |
 | `#[Operation]` | class, method | 添加 manual OpenAPI operation fragment. |
 | `#[ItemType]` | property, parameter | 描述 array item type. |
@@ -322,7 +325,7 @@ public function list(): JsonResponse
 
 该 fragment 会合并到 generated operation。
 
-## PHP Type Schema Resolution
+## PHP Type Schema Resolvers
 
 已注册的 resolvers:
 

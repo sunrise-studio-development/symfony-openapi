@@ -6,11 +6,11 @@
 
 Мови: [🇬🇧 English](README.md) | [🇨🇳 简体中文](README-zh-CN.md) | [🇪🇸 Español](README-es.md) | [🇵🇹 Português](README-pt.md) | [🇷🇺 Русский](README-ru.md) | [🇺🇦 Українська](README-uk.md)
 
-`sunrise-studio/symfony-openapi` генерує OpenAPI-документ із маршрутів Symfony, сигнатур контролерів, атрибутів Symfony HttpKernel та типізованих PHP DTO/View класів.
+Цей пакет генерує OpenAPI-документ із маршрутів Symfony, сигнатур контролерів, атрибутів Symfony HttpKernel та типізованих DTO/View класів.
 
 Мета пакета — тримати API-документацію близько до коду застосунку. Звичайні endpoints не повинні вимагати великих блоків `#[OA\...]`. Маршрути описують paths і methods, Symfony attributes описують request mapping, DTO описують вхідні дані, view objects описують вихідні дані, а route options описують metadata операції. Ручні OpenAPI-фрагменти залишаються для виняткових випадків.
 
-Symfony API живе в namespace `Sunrise\Symfony\OpenApi`. Всередині пакет використовує OpenAPI engine з [Sunrise HTTP Router](https://github.com/sunrise-php/http-router).
+API живе в namespace `Sunrise\Symfony\OpenApi`. Всередині пакет використовує OpenAPI engine з [Sunrise HTTP Router](https://github.com/sunrise-php/http-router).
 
 ## Встановлення
 
@@ -43,7 +43,7 @@ openapi:
 | `GET /openapi` | `OpenApiController` | Віддає згенерований OpenAPI JSON document. |
 | `GET /swagger.html` | `SwaggerController` | Віддає Swagger UI, налаштований на `/openapi`. |
 
-Обидва маршрути використовують `api: false`, тому вони не потрапляють у generated API document.
+Ці маршрути не потрапляють у generated API document: для них не задано `api: true`, а їхні paths не починаються з `/api/`.
 
 Якщо потрібен тільки один маршрут, імпортуйте його файл напряму:
 
@@ -68,7 +68,7 @@ swagger_ui:
 # config/packages/openapi.yaml
 parameters:
   openapi.initial_document:
-    openapi: !php/const Sunrise\Http\Router\OpenApi\OpenApiConfiguration::VERSION
+    openapi: 3.1.1
     info:
       title: API
       version: 1.0.0
@@ -98,7 +98,7 @@ parameters:
 php bin/console openapi:build-document
 ```
 
-Команда читає колекцію маршрутів Symfony, отримує metadata маршрутів, залишає API routes, будує OpenAPI document і записує його в `openapi.document_filename`.
+Команда читає колекцію маршрутів, отримує metadata маршрутів, залишає API routes, будує OpenAPI document і записує його в `openapi.document_filename`.
 
 Після генерації:
 
@@ -133,13 +133,13 @@ final readonly class PetController
 
 | Option | Type | Призначення |
 | --- | --- | --- |
-| `tags` | `string|string[]` | OpenAPI operation tags. |
+| `tags` | `string\|string[]` | OpenAPI operation tags. |
 | `summary` | `string` | OpenAPI operation summary. |
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Позначає operation як deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | Включає route у generated document або виключає його. |
 | `response_status` | `int` | Перевизначає generated response status. |
-| `response_formats` | `string|string[]` | Symfony response formats, наприклад `json` або `xml`. |
+| `response_formats` | `string\|string[]` | Symfony response formats, наприклад `json` або `xml`. |
 
 Якщо API option не задано, маршрути з path `/api/...` вважаються API routes.
 
@@ -148,74 +148,6 @@ final readonly class PetController
 ## Symfony Attributes
 
 Пакет підтримує Symfony controller value resolver attributes. Див. [документацію Symfony](https://symfony.com/doc/current/controller/value_resolver.html).
-
-### Request Body
-
-`#[MapRequestPayload]` створює OpenAPI `requestBody`.
-
-```php
-use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-
-public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetRequest $request): PetView
-{
-    // ...
-}
-```
-
-Поведінка:
-
-- PHP type параметра стає request schema.
-- `acceptFormat` перетворюється із Symfony request format на media type, наприклад `json` на `application/json`.
-- Якщо PHP parameter required, OpenAPI request body також required.
-- Для array payload `MapRequestPayload(type: SomeDto::class)` описує item type.
-
-### Query Object
-
-`#[MapQueryString]` описує query object.
-
-```php
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
-
-public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
-{
-    // ...
-}
-```
-
-Якщо `key` дорівнює `null`, об'єкт описується як увесь query string з `style: form`. Якщо `key` задано, параметр використовує `style: deepObject`.
-
-### Query Parameter
-
-`#[MapQueryParameter]` описує scalar, enum, date/time, UID або array query parameters.
-
-```php
-use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
-
-public function find(
-    #[MapQueryParameter] PetStatus $status,
-    #[MapQueryParameter] string ...$tags,
-): JsonResponse {
-    // ...
-}
-```
-
-Variadic parameters описуються як arrays і не позначаються required.
-
-### Uploaded Files
-
-`#[MapUploadedFile]` додає `multipart/form-data` request body з binary fields.
-
-```php
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
-
-public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): JsonResponse
-{
-    // ...
-}
-```
-
-Variadic uploaded files описуються як array of binary strings і не позначаються required.
 
 ### Path Variables
 
@@ -241,6 +173,75 @@ public function show(int $petId): PetView
 
 Symfony route mapping aliases підтримуються для простих mappings, наприклад `['id' => 'petId']`. Entity-style mappings на кшталт `{id:pet.id}` не описуються як object schemas; публічна path variable документується як string, якщо не знайдено підтримуваний scalar parameter.
 
+### Query Parameter
+
+`#[MapQueryParameter]` описує scalar, enum, date/time, UID або array query parameters.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
+
+public function find(
+    #[MapQueryParameter] PetStatus $status,
+    #[MapQueryParameter] string ...$tags,
+): JsonResponse {
+    // ...
+}
+```
+
+Variadic parameters описуються як arrays і не позначаються required.
+
+### Query Object
+
+`#[MapQueryString]` описує query object.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+
+public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
+{
+    // ...
+}
+```
+
+Якщо `key` дорівнює `null`, об'єкт описується як увесь query string з `style: form`. Якщо `key` задано, параметр використовує `style: deepObject`.
+
+### Request Body
+
+`#[MapRequestPayload]` створює OpenAPI `requestBody`.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+
+public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetRequest $request): PetView
+{
+    // ...
+}
+```
+
+Поведінка:
+
+- PHP type параметра стає request schema.
+- `acceptFormat` опціональний. Якщо він не заданий, використовуються default accept formats; за замовчуванням це `json`.
+- `acceptFormat` перетворюється із Symfony request format на media type, наприклад `json` на `application/json`.
+- Якщо PHP parameter required, OpenAPI request body також required.
+- Для array payload `MapRequestPayload(type: SomeDto::class)` описує item type.
+
+### Uploaded Files
+
+`#[MapUploadedFile]` додає `multipart/form-data` request body з binary fields.
+
+```php
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
+
+public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): JsonResponse
+{
+    // ...
+}
+```
+
+Variadic uploaded files описуються як array of binary strings і не позначаються required.
+
 ### Date And Time
 
 `#[MapDateTime(format: ...)]` змінює generated date/time example для параметрів контролера.
@@ -253,6 +254,8 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
     // ...
 }
 ```
+
+Аргумент `format` опціональний. Якщо він не заданий, використовується default timestamp format.
 
 ## Генерація Відповідей
 
@@ -278,11 +281,11 @@ public function show(int $id): PetView
 
 Якщо проєкт обгортає responses, наприклад `{data: ..., meta: ...}`, замініть `ResponseMetadataResolverInterface` або response operation enrichers.
 
-## Symfony OpenAPI-Атрибути
+## OpenAPI-Атрибути
 
-Пакет надає Symfony-facing annotations для типових OpenAPI schema tasks:
+Пакет надає OpenAPI attributes для типових schema tasks:
 
-| Annotation | Target | Призначення |
+| Attribute | Target | Призначення |
 | --- | --- | --- |
 | `#[Operation]` | class, method | Додає manual OpenAPI operation fragment. |
 | `#[ItemType]` | property, parameter | Описує array item type. |
@@ -322,7 +325,7 @@ public function list(): JsonResponse
 
 Фрагмент об'єднується з generated operation.
 
-## Розв'язання PHP Type Schemas
+## PHP Type Schema Resolvers
 
 Зареєстровані resolvers:
 
