@@ -26,7 +26,6 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyUidPhpTypeSchemaRes
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SunriseTimestampPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
-use Sunrise\Symfony\ApiFoundation\OperationEnricher\SerializableResponseOperationEnricher;
 use Sunrise\Symfony\OpenApi\Command\BuildDocumentCommand;
 use Sunrise\Symfony\OpenApi\Controller\DocumentController;
 use Sunrise\Symfony\OpenApi\Controller\SwaggerController;
@@ -36,6 +35,7 @@ use Sunrise\Symfony\OpenApi\OperationEnricher\MapQueryStringOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapRequestPayloadOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapUploadedFileOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\PathVariablesOperationEnricher;
+use Sunrise\Symfony\OpenApi\OperationEnricher\SerializableResponseOperationEnricher;
 use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SymfonyTimestampPhpTypeSchemaResolver;
 use Sunrise\Symfony\OpenApi\RequestHandlerReflector;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolver;
@@ -56,7 +56,7 @@ return static function (ContainerConfigurator $container): void {
     // ***
 
     $parameters->set('openapi.initial_document', [
-        'openapi' => OpenApiConfiguration::VERSION,
+        'openapi' => '3.1.1',
         'info' => [
             'title' => 'API',
             'version' => '1.0.0',
@@ -68,8 +68,8 @@ return static function (ContainerConfigurator $container): void {
     ]);
 
     $parameters->set('openapi.document_filename', '%kernel.project_dir%/var/openapi.json');
-    $parameters->set('openapi.default_timestamp_format', OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT);
-    $parameters->set('openapi.default_accept_formats', ['json']);
+
+    $parameters->set('openapi.default_timestamp_format', DateTimeInterface::RFC3339_EXTENDED);
 
     // ***
 
@@ -137,6 +137,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(DocumentController::class)
         ->tag('controller.service_arguments');
+
     $services->set(SwaggerController::class)
         ->tag('controller.service_arguments');
 

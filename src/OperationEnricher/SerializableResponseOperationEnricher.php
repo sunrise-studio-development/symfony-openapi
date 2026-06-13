@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Symfony\ApiFoundation\OperationEnricher;
+namespace Sunrise\Symfony\OpenApi\OperationEnricher;
 
 use ReflectionAttribute;
 use ReflectionClass;
