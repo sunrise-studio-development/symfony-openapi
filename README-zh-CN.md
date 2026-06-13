@@ -19,7 +19,7 @@ API 位于 `Sunrise\Symfony\OpenApi` namespace。包内部使用 [Sunrise HTTP R
 composer require sunrise-studio/symfony-openapi
 ```
 
-该包需要 `symfony/http-kernel` 8.1 或更新版本，因为 response 文档使用 Symfony 的 `#[Serialize]` attribute.
+该包需要 Symfony HttpKernel 8.1 或更新版本。
 
 注册 bundle:
 
@@ -86,9 +86,42 @@ parameters:
 | `openapi.initial_document` | OpenAPI version + `API` title | 与生成的 paths 和 schemas 合并的基础 document. |
 | `openapi.initial_operation` | `responses: []` | 与每个 generated operation 合并的基础 operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | `openapi:build-document` 使用的 output file. |
+| `openapi.document_uri` | `/openapi` | 生成文档的 public URI。Swagger UI 使用它加载文档。 |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | 用于为 date/time schemas 生成 OpenAPI `example` 的 PHP `date()` 格式. |
 
-如果需要自定义 Swagger UI assets、template variables 或 OpenAPI URL，可以把 `SwaggerConfiguration` 替换为自己的 service。
+如果需要自定义 Swagger UI assets 或 template variables，可以把 `SwaggerConfiguration` 替换为自己的 service。
+
+### Custom Route Paths
+
+如果只有 Swagger UI 需要不同 path，可以自己定义 route:
+
+```yaml
+# config/routes.yaml
+swagger_ui:
+  path: /docs
+  controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
+  methods: [GET]
+  options:
+    api: false
+```
+
+如果 OpenAPI document route 也改变，需要同时更新 route 和 `openapi.document_uri`，这样 Swagger UI 才会加载正确文档:
+
+```yaml
+# config/routes.yaml
+openapi_document:
+  path: /docs/openapi.json
+  controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
+  methods: [GET]
+  options:
+    api: false
+```
+
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.document_uri: /docs/openapi.json
+```
 
 ## 生成文档
 

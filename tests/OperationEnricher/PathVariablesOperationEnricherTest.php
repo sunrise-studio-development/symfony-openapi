@@ -95,7 +95,7 @@ final class PathVariablesOperationEnricherTest extends TestCase
         $operationEnricher = new PathVariablesOperationEnricher();
         $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
-            $this->createMock(RouteInterface::class),
+            $this->createStub(RouteInterface::class),
             self::createControllerReflection('pathVariable'),
             $operation,
         );

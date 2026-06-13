@@ -68,6 +68,7 @@ return static function (ContainerConfigurator $container): void {
     ]);
 
     $parameters->set('openapi.document_filename', '%kernel.project_dir%/var/openapi.json');
+    $parameters->set('openapi.document_uri', DocumentController::ROUTE_PATH);
 
     $parameters->set('openapi.default_timestamp_format', DateTimeInterface::RFC3339_EXTENDED);
 
@@ -80,7 +81,8 @@ return static function (ContainerConfigurator $container): void {
         ->arg('$documentFilename', '%openapi.document_filename%')
         ->arg('$defaultTimestampFormat', '%openapi.default_timestamp_format%');
 
-    $services->set(SwaggerConfiguration::class);
+    $services->set(SwaggerConfiguration::class)
+        ->arg('$openapiUri', '%openapi.document_uri%');
 
     // ***
 

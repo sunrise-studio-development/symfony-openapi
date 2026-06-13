@@ -19,7 +19,7 @@ The API lives in the `Sunrise\Symfony\OpenApi` namespace. The package uses the O
 composer require sunrise-studio/symfony-openapi
 ```
 
-The package requires `symfony/http-kernel` 8.1 or newer because response documentation uses Symfony's `#[Serialize]` attribute.
+The package requires Symfony HttpKernel 8.1 or newer.
 
 Register the bundle:
 
@@ -86,9 +86,42 @@ Useful parameters:
 | `openapi.initial_document` | OpenAPI version + `API` title | Base document merged with generated paths and schemas. |
 | `openapi.initial_operation` | `responses: []` | Base operation merged into every generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file used by `openapi:build-document`. |
+| `openapi.document_uri` | `/openapi` | Public URI of the generated document. Swagger UI uses it to load the document. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | PHP `date()` format used to generate OpenAPI `example` values for date/time schemas. |
 
-`SwaggerConfiguration` can be replaced as a service if you need custom Swagger UI assets, template variables, or a different OpenAPI URL.
+`SwaggerConfiguration` can be replaced as a service if you need custom Swagger UI assets or template variables.
+
+### Custom Route Paths
+
+If only Swagger UI needs a different path, define the route yourself:
+
+```yaml
+# config/routes.yaml
+swagger_ui:
+  path: /docs
+  controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
+  methods: [GET]
+  options:
+    api: false
+```
+
+If the OpenAPI document route also changes, update both the route and `openapi.document_uri` so Swagger UI loads the correct document:
+
+```yaml
+# config/routes.yaml
+openapi_document:
+  path: /docs/openapi.json
+  controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
+  methods: [GET]
+  options:
+    api: false
+```
+
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.document_uri: /docs/openapi.json
+```
 
 ## Building The Document
 

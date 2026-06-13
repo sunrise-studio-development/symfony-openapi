@@ -19,7 +19,7 @@ API живе в namespace `Sunrise\Symfony\OpenApi`. Всередині паке
 composer require sunrise-studio/symfony-openapi
 ```
 
-Пакету потрібен `symfony/http-kernel` 8.1 або новіший, тому що документація responses використовує Symfony attribute `#[Serialize]`.
+Пакету потрібен Symfony HttpKernel 8.1 або новіший.
 
 Підключіть bundle:
 
@@ -86,9 +86,42 @@ parameters:
 | `openapi.initial_document` | OpenAPI version + `API` title | Базовий документ, з яким об'єднуються generated paths і schemas. |
 | `openapi.initial_operation` | `responses: []` | Базова operation, що об'єднується з кожною generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file для `openapi:build-document`. |
+| `openapi.document_uri` | `/openapi` | Public URI згенерованого документа. Swagger UI використовує його для завантаження документа. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Формат PHP `date()` для генерації OpenAPI `example` у схемах дати/часу. |
 
-`SwaggerConfiguration` можна замінити як сервіс, якщо потрібні власні Swagger UI assets, template variables або інший OpenAPI URL.
+`SwaggerConfiguration` можна замінити як сервіс, якщо потрібні власні Swagger UI assets або template variables.
+
+### Custom Route Paths
+
+Якщо інший path потрібен тільки для Swagger UI, визначте маршрут самостійно:
+
+```yaml
+# config/routes.yaml
+swagger_ui:
+  path: /docs
+  controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
+  methods: [GET]
+  options:
+    api: false
+```
+
+Якщо змінюється і route OpenAPI document, оновіть сам маршрут і `openapi.document_uri`, щоб Swagger UI завантажував правильний документ:
+
+```yaml
+# config/routes.yaml
+openapi_document:
+  path: /docs/openapi.json
+  controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
+  methods: [GET]
+  options:
+    api: false
+```
+
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.document_uri: /docs/openapi.json
+```
 
 ## Генерація Документа
 

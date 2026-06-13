@@ -19,7 +19,7 @@ La API vive en el namespace `Sunrise\Symfony\OpenApi`. Internamente, el paquete 
 composer require sunrise-studio/symfony-openapi
 ```
 
-El paquete requiere `symfony/http-kernel` 8.1 o más nuevo porque la documentación de responses usa el attribute Symfony `#[Serialize]`.
+El paquete requiere Symfony HttpKernel 8.1 o más nuevo.
 
 Registra el bundle:
 
@@ -86,9 +86,42 @@ Parámetros útiles:
 | `openapi.initial_document` | OpenAPI version + `API` title | Documento base que se fusiona con los generated paths y schemas. |
 | `openapi.initial_operation` | `responses: []` | Operation base que se fusiona con cada generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file usado por `openapi:build-document`. |
+| `openapi.document_uri` | `/openapi` | Public URI del documento generado. Swagger UI lo usa para cargar el documento. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Formato PHP `date()` usado para generar valores OpenAPI `example` para schemas de fecha/hora. |
 
-`SwaggerConfiguration` puede reemplazarse como servicio si necesitas Swagger UI assets, template variables o una OpenAPI URL diferente.
+`SwaggerConfiguration` puede reemplazarse como servicio si necesitas Swagger UI assets o template variables.
+
+### Custom Route Paths
+
+Si solo Swagger UI necesita otro path, define la ruta tú mismo:
+
+```yaml
+# config/routes.yaml
+swagger_ui:
+  path: /docs
+  controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
+  methods: [GET]
+  options:
+    api: false
+```
+
+Si también cambia la route del OpenAPI document, actualiza la ruta y `openapi.document_uri` para que Swagger UI cargue el documento correcto:
+
+```yaml
+# config/routes.yaml
+openapi_document:
+  path: /docs/openapi.json
+  controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
+  methods: [GET]
+  options:
+    api: false
+```
+
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.document_uri: /docs/openapi.json
+```
 
 ## Construir El Documento
 

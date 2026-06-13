@@ -39,7 +39,7 @@
   "scripts": {
     "phpcs": "@php phpcs --colors",
     "psalm": "@php psalm --no-cache --threads=1",
-    "phpstan": "@php phpstan analyse src --level=9 --memory-limit=-1",
+    "phpstan": "@php phpstan analyse src --level=9 --memory-limit=-1 --debug",
     "phpunit": "@php phpunit --colors=always",
     "test": [
       "@phpcs",

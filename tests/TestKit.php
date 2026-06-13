@@ -35,7 +35,7 @@ trait TestKit
 
     private function mockRoute(string $path = '/foo'): RouteInterface
     {
-        $route = $this->createMock(RouteInterface::class);
+        $route = $this->createStub(RouteInterface::class);
         $route->method('getPath')->willReturn($path);
 
         return $route;
@@ -71,7 +71,7 @@ trait TestKit
     private function mockPhpTypeSchemaResolverManager(
         array $schema = ['type' => 'schema'],
     ): OpenApiPhpTypeSchemaResolverManagerInterface {
-        $manager = $this->createMock(OpenApiPhpTypeSchemaResolverManagerInterface::class);
+        $manager = $this->createStub(OpenApiPhpTypeSchemaResolverManagerInterface::class);
         $manager
             ->method('resolvePhpTypeSchema')
             ->willReturnCallback(static function (Type $type) use ($schema): array {

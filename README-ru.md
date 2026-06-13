@@ -19,7 +19,7 @@ API живет в namespace `Sunrise\Symfony\OpenApi`. Внутри пакет �
 composer require sunrise-studio/symfony-openapi
 ```
 
-Пакету нужен `symfony/http-kernel` 8.1 или новее, потому что документация responses использует Symfony attribute `#[Serialize]`.
+Пакету нужен Symfony HttpKernel 8.1 или новее.
 
 Подключите bundle:
 
@@ -86,9 +86,42 @@ parameters:
 | `openapi.initial_document` | OpenAPI version + `API` title | Базовый документ, с которым объединяются generated paths и schemas. |
 | `openapi.initial_operation` | `responses: []` | Базовая operation, которая объединяется с каждой generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file для `openapi:build-document`. |
+| `openapi.document_uri` | `/openapi` | Public URI сгенерированного документа. Swagger UI использует его для загрузки документа. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Формат PHP `date()` для генерации OpenAPI `example` у схем даты/времени. |
 
-`SwaggerConfiguration` можно заменить как сервис, если нужны свои Swagger UI assets, template variables или другой OpenAPI URL.
+`SwaggerConfiguration` можно заменить как сервис, если нужны свои Swagger UI assets или template variables.
+
+### Custom Route Paths
+
+Если другой path нужен только для Swagger UI, определите маршрут сами:
+
+```yaml
+# config/routes.yaml
+swagger_ui:
+  path: /docs
+  controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
+  methods: [GET]
+  options:
+    api: false
+```
+
+Если меняется и route OpenAPI document, обновите сам маршрут и `openapi.document_uri`, чтобы Swagger UI загружал правильный документ:
+
+```yaml
+# config/routes.yaml
+openapi_document:
+  path: /docs/openapi.json
+  controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
+  methods: [GET]
+  options:
+    api: false
+```
+
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.document_uri: /docs/openapi.json
+```
 
 ## Генерация Документа
 
