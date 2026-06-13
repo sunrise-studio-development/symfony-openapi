@@ -14,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 #[AsCommand('openapi:build-document', 'Builds the OpenAPI document.')]
-final class OpenApiBuildDocumentCommand extends Command
+final class BuildDocumentCommand extends Command
 {
     public function __construct(
         private readonly RouterInterface $router,

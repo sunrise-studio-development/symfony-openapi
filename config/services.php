@@ -27,8 +27,8 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaReso
 use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Symfony\ApiFoundation\OperationEnricher\SerializableResponseOperationEnricher;
-use Sunrise\Symfony\OpenApi\Command\OpenApiBuildDocumentCommand;
-use Sunrise\Symfony\OpenApi\Controller\OpenApiController;
+use Sunrise\Symfony\OpenApi\Command\BuildDocumentCommand;
+use Sunrise\Symfony\OpenApi\Controller\DocumentController;
 use Sunrise\Symfony\OpenApi\Controller\SwaggerController;
 use Sunrise\Symfony\OpenApi\OpenApiPathBuilder;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapQueryParameterOperationEnricher;
@@ -133,9 +133,9 @@ return static function (ContainerConfigurator $container): void {
 
     // ***
 
-    $services->set(OpenApiBuildDocumentCommand::class);
+    $services->set(BuildDocumentCommand::class);
 
-    $services->set(OpenApiController::class)
+    $services->set(DocumentController::class)
         ->tag('controller.service_arguments');
     $services->set(SwaggerController::class)
         ->tag('controller.service_arguments');
