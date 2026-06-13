@@ -30,6 +30,13 @@ final readonly class ControllerFixture
     ): void {
     }
 
+    public function queryParameterWithUnmappedParameter(
+        int $foo,
+        #[MapQueryParameter]
+        string $bar,
+    ): void {
+    }
+
     public function queryString(
         #[MapQueryString]
         DtoFixture $query,
@@ -38,9 +45,29 @@ final readonly class ControllerFixture
     ): void {
     }
 
+    public function queryStringWithUnmappedParameter(
+        string $foo,
+        #[MapQueryString]
+        DtoFixture $bar,
+    ): void {
+    }
+
     public function requestPayload(
         #[MapRequestPayload(acceptFormat: 'json')]
         DtoFixture $payload,
+    ): void {
+    }
+
+    public function requestPayloadWithDefaultFormat(
+        #[MapRequestPayload]
+        DtoFixture $payload,
+    ): void {
+    }
+
+    public function requestPayloadWithUnmappedParameter(
+        string $foo,
+        #[MapRequestPayload]
+        DtoFixture $bar,
     ): void {
     }
 
@@ -58,6 +85,13 @@ final readonly class ControllerFixture
         UploadedFile $file,
         #[MapUploadedFile]
         UploadedFile ...$attachments,
+    ): void {
+    }
+
+    public function uploadedFileWithUnmappedParameter(
+        string $foo,
+        #[MapUploadedFile]
+        UploadedFile $bar,
     ): void {
     }
 
@@ -83,6 +117,10 @@ final readonly class ControllerFixture
         #[MapDateTime(format: 'Y-m-d', disabled: true)]
         DateTimeImmutable $createdAt,
     ): void {
+    }
+
+    public function defaultTimestamp(DateTimeImmutable $createdAt): void
+    {
     }
 
     #[Serialize(code: 201)]

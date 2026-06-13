@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi\Tests;
 
 use ReflectionMethod;
+use ReflectionParameter;
 use Sunrise\Coder\Dictionary\MediaType;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
@@ -31,6 +32,23 @@ trait TestKit
     private static function createControllerReflection(string $method): ReflectionMethod
     {
         return new ReflectionMethod(ControllerFixture::class, $method);
+    }
+
+    private static function getParameterReflection(string $method, string $parameter): ReflectionParameter
+    {
+        $controllerReflection = self::createControllerReflection($method);
+        foreach ($controllerReflection->getParameters() as $parameterReflection) {
+            if ($parameterReflection->name === $parameter) {
+                return $parameterReflection;
+            }
+        }
+
+        self::fail(\sprintf(
+            'Parameter "%s::%s(%s)" was not found.',
+            $controllerReflection::class,
+            $method,
+            $parameter,
+        ));
     }
 
     private function mockRoute(string $path = '/foo'): RouteInterface

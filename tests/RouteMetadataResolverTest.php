@@ -22,7 +22,7 @@ final class RouteMetadataResolverTest extends TestCase
             'api' => true,
         ]);
 
-        $metadata = (new RouteMetadataResolver())->resolveRouteMetadata($route);
+        $metadata = new RouteMetadataResolver()->resolveRouteMetadata($route);
 
         self::assertSame(['Pets'], $metadata->tags);
         self::assertSame('Summary', $metadata->summary);
@@ -31,10 +31,21 @@ final class RouteMetadataResolverTest extends TestCase
         self::assertTrue($metadata->isApi);
     }
 
+    public function testResolveTagAlias(): void
+    {
+        $metadata = new RouteMetadataResolver()->resolveRouteMetadata(
+            new Route('/api/foo', options: [
+                'tag' => ['Pets'],
+            ])
+        );
+
+        self::assertSame(['Pets'], $metadata->tags);
+    }
+
     #[DataProvider('deprecatedOptionProvider')]
     public function testResolveDeprecatedOption(string $option): void
     {
-        $metadata = (new RouteMetadataResolver())->resolveRouteMetadata(
+        $metadata = new RouteMetadataResolver()->resolveRouteMetadata(
             new Route('/api/foo', options: [
                 $option => true,
             ])
@@ -56,7 +67,7 @@ final class RouteMetadataResolverTest extends TestCase
     #[DataProvider('apiOptionProvider')]
     public function testResolveApiOption(string $option): void
     {
-        $metadata = (new RouteMetadataResolver())->resolveRouteMetadata(
+        $metadata = new RouteMetadataResolver()->resolveRouteMetadata(
             new Route('/internal/foo', options: [
                 $option => true,
             ])
@@ -77,8 +88,15 @@ final class RouteMetadataResolverTest extends TestCase
 
     public function testApiRoutePath(): void
     {
-        $metadata = (new RouteMetadataResolver())->resolveRouteMetadata(new Route('/api/foo'));
+        $metadata = new RouteMetadataResolver()->resolveRouteMetadata(new Route('/api/foo'));
 
         self::assertTrue($metadata->isApi);
+    }
+
+    public function testInternalRoutePath(): void
+    {
+        $metadata = new RouteMetadataResolver()->resolveRouteMetadata(new Route('/internal/foo'));
+
+        self::assertFalse($metadata->isApi);
     }
 }
