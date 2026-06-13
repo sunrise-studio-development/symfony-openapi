@@ -345,8 +345,8 @@ public function delete(int $id): void
 Більшості endpoints не потрібні ручні OpenAPI fragments. Для виняткових випадків використовуйте `#[Operation]`:
 
 ```php
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Symfony\OpenApi\Annotation\Operation;
+use Sunrise\Symfony\OpenApi\Type;
 
 #[Operation([
     'responses' => [
@@ -370,6 +370,34 @@ public function list(): JsonResponse
 ```
 
 Фрагмент об'єднується з generated operation.
+
+### Документування Помилок
+
+Ми рекомендуємо робити API передбачуваним: успішний action має повертати один документований view object, а помилки мають мати документовану error shape, а не ховатися в гілках контролера.
+
+Для спільного error response опишіть `default` response через `#[Operation]` або через `openapi.initial_operation`:
+
+```php
+use App\View\ErrorView;
+use Sunrise\Symfony\OpenApi\Annotation\Operation;
+use Sunrise\Symfony\OpenApi\Type;
+
+#[Operation([
+    'responses' => [
+        'default' => [
+            'description' => 'The operation was unsuccessful.',
+            'content' => [
+                'application/json' => [
+                    'schema' => new Type(ErrorView::class),
+                ],
+            ],
+        ],
+    ],
+])]
+final readonly class PetController
+{
+}
+```
 
 ## PHP Type Schema Resolvers
 

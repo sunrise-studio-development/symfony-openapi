@@ -9,7 +9,7 @@ use ReflectionParameter;
 use Sunrise\Coder\Dictionary\MediaType;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
-use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Symfony\OpenApi\RouteAdapter;
 use Sunrise\Symfony\OpenApi\RouteMetadata;
@@ -92,8 +92,8 @@ trait TestKit
         $manager = $this->createStub(OpenApiPhpTypeSchemaResolverManagerInterface::class);
         $manager
             ->method('resolvePhpTypeSchema')
-            ->willReturnCallback(static function (Type $type) use ($schema): array {
-                return $schema + ['phpType' => $type->name];
+            ->willReturnCallback(static function (TypeInterface $type) use ($schema): array {
+                return $schema + ['phpType' => $type->getName()];
             });
 
         return $manager;

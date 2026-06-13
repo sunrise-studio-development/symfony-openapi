@@ -8,10 +8,10 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver
     as SunriseTimestampPhpTypeSchemaResolver;
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
+use Sunrise\Symfony\OpenApi\Type;
 
 final class TimestampPhpTypeSchemaResolverTest extends TestCase
 {

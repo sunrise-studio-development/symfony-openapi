@@ -13,7 +13,7 @@ use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SunrisePhpTypeSchemaResolver;
-use Sunrise\Http\Router\OpenApi\Type;
+use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Symfony\Component\HttpKernel\Attribute\MapDateTime;
 
 final readonly class TimestampPhpTypeSchemaResolver implements
@@ -32,7 +32,7 @@ final readonly class TimestampPhpTypeSchemaResolver implements
     }
 
     #[Override]
-    public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
+    public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
         return $this->timestampPhpTypeSchemaResolver->supportsPhpType($phpType, $phpTypeHolder);
     }
@@ -41,7 +41,7 @@ final readonly class TimestampPhpTypeSchemaResolver implements
      * @inheritDoc
      */
     #[Override]
-    public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
+    public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
 

@@ -345,8 +345,8 @@ O pacote fornece OpenAPI attributes para tarefas comuns de schema:
 A maioria dos endpoints não deve precisar de OpenAPI fragments manuais. Para casos excepcionais, use `#[Operation]`:
 
 ```php
-use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Symfony\OpenApi\Annotation\Operation;
+use Sunrise\Symfony\OpenApi\Type;
 
 #[Operation([
     'responses' => [
@@ -370,6 +370,34 @@ public function list(): JsonResponse
 ```
 
 O fragment é mesclado com a generated operation.
+
+### Documentando Erros
+
+Recomendamos manter a API previsível: uma action bem-sucedida deve retornar um view object documentado, e erros devem usar uma error shape documentada em vez de ficarem escondidos em branches do controller.
+
+Para um error response comum, descreva um `default` response com `#[Operation]` ou com `openapi.initial_operation`:
+
+```php
+use App\View\ErrorView;
+use Sunrise\Symfony\OpenApi\Annotation\Operation;
+use Sunrise\Symfony\OpenApi\Type;
+
+#[Operation([
+    'responses' => [
+        'default' => [
+            'description' => 'The operation was unsuccessful.',
+            'content' => [
+                'application/json' => [
+                    'schema' => new Type(ErrorView::class),
+                ],
+            ],
+        ],
+    ],
+])]
+final readonly class PetController
+{
+}
+```
 
 ## PHP Type Schema Resolvers
 
