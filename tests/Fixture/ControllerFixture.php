@@ -68,7 +68,7 @@ final readonly class ControllerFixture
     {
     }
 
-    public function entityPathVariable(PetFixture $pet): void
+    public function entityPathVariable(EntityFixture $pet): void
     {
     }
 
@@ -82,10 +82,6 @@ final readonly class ControllerFixture
         #[MapDateTime(format: 'Y-m-d', disabled: true)]
         DateTimeImmutable $createdAt,
     ): void {
-    }
-
-    public function emptyResponse(): void
-    {
     }
 
     public function serializableResponse(): DtoFixture

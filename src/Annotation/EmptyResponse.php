@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Symfony\ApiFoundation\Annotation;
+namespace Sunrise\Symfony\OpenApi\Annotation;
 
 use Attribute;
 use Sunrise\Http\Router\OpenApi\Annotation\OperationInterface;

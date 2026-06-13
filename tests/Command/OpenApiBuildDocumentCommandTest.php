@@ -6,7 +6,7 @@ namespace Sunrise\Symfony\OpenApi\Tests\Command;
 
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
-use Sunrise\Symfony\OpenApi\Command\OpenApiBuildDocumentCommand;
+use Sunrise\Symfony\OpenApi\Command\BuildDocumentCommand;
 use Sunrise\Symfony\OpenApi\RouteAdapter;
 use Sunrise\Symfony\OpenApi\RouteMetadata;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolverInterface;
@@ -56,7 +56,7 @@ final class OpenApiBuildDocumentCommandTest extends TestCase
             ->with(['foo' => 'bar']);
 
         $commandTester = new CommandTester(
-            new OpenApiBuildDocumentCommand(
+            new BuildDocumentCommand(
                 $router,
                 $openApiDocumentManager,
                 $routeMetadataResolver,

@@ -6,10 +6,10 @@ namespace Sunrise\Symfony\OpenApi\Tests\Controller;
 
 use PHPUnit\Framework\TestCase;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
-use Sunrise\Symfony\OpenApi\Controller\OpenApiController;
+use Sunrise\Symfony\OpenApi\Controller\DocumentController;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
 
-final class OpenApiControllerTest extends TestCase
+final class DocumentControllerTest extends TestCase
 {
     use TestKit;
 
@@ -24,7 +24,7 @@ final class OpenApiControllerTest extends TestCase
         $openApiDocumentManager = $this->createMock(OpenApiDocumentManagerInterface::class);
         $openApiDocumentManager->expects(self::once())->method('openDocument')->willReturn($document);
 
-        $response = (new OpenApiController(self::createOpenApiConfiguration(), $openApiDocumentManager))();
+        $response = (new DocumentController(self::createOpenApiConfiguration(), $openApiDocumentManager))();
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));

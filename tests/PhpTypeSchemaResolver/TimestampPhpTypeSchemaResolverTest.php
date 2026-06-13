@@ -7,7 +7,7 @@ namespace Sunrise\Symfony\OpenApi\Tests\PhpTypeSchemaResolver;
 use PHPUnit\Framework\TestCase;
 use ReflectionParameter;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver
-    as BaseTimestampPhpTypeSchemaResolver;
+    as SunriseTimestampPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
@@ -18,7 +18,7 @@ final class TimestampPhpTypeSchemaResolverTest extends TestCase
 
     public function testMapDateTimeFormat(): void
     {
-        $resolver = new TimestampPhpTypeSchemaResolver(new BaseTimestampPhpTypeSchemaResolver());
+        $resolver = new TimestampPhpTypeSchemaResolver(new SunriseTimestampPhpTypeSchemaResolver());
         $resolver->setOpenApiConfiguration(self::createOpenApiConfiguration());
 
         $parameter = self::getParameterReflection('timestamp', 'createdAt');
@@ -30,7 +30,7 @@ final class TimestampPhpTypeSchemaResolverTest extends TestCase
 
     public function testDisabledMapDateTime(): void
     {
-        $resolver = new TimestampPhpTypeSchemaResolver(new BaseTimestampPhpTypeSchemaResolver());
+        $resolver = new TimestampPhpTypeSchemaResolver(new SunriseTimestampPhpTypeSchemaResolver());
         $resolver->setOpenApiConfiguration(self::createOpenApiConfiguration(defaultTimestampFormat: 'd.m.Y'));
 
         $parameter = self::getParameterReflection('disabledTimestamp', 'createdAt');
