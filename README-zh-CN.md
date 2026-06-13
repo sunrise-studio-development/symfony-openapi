@@ -19,6 +19,8 @@ API 位于 `Sunrise\Symfony\OpenApi` namespace。包内部使用 [Sunrise HTTP R
 composer require sunrise-studio/symfony-openapi
 ```
 
+该包需要 `symfony/http-kernel` 8.1 或更新版本，因为 response 文档使用 Symfony 的 `#[Serialize]` attribute.
+
 注册 bundle:
 
 ```php
@@ -41,7 +43,7 @@ openapi:
 
 | Route | Controller | 用途 |
 | --- | --- | --- |
-| `GET /openapi` | `OpenApiController` | 返回生成的 OpenAPI JSON document. |
+| `GET /openapi` | `DocumentController` | 返回生成的 OpenAPI JSON document. |
 | `GET /swagger.html` | `SwaggerController` | 返回配置为读取 `/openapi` 的 Swagger UI. |
 
 这两个路由不会进入生成的 API document：它们没有设置 `api: true`，并且 paths 不以 `/api/` 开头。
@@ -50,7 +52,7 @@ openapi:
 
 ```yaml
 openapi_document:
-  resource: '@OpenApiBundle/config/routes/openapi.php'
+  resource: '@OpenApiBundle/config/routes/document.php'
 
 swagger_ui:
   resource: '@OpenApiBundle/config/routes/swagger.php'
@@ -85,9 +87,6 @@ parameters:
 | `openapi.initial_operation` | `responses: []` | 与每个 generated operation 合并的基础 operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | `openapi:build-document` 使用的 output file. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | 用于为 date/time schemas 生成 OpenAPI `example` 的 PHP `date()` 格式. |
-| `openapi.default_empty_response_status` | `204` | `void` controller methods 的默认 status. |
-| `openapi.default_response_status` | `200` | 可序列化 return objects 的默认 status. |
-| `openapi.default_response_formats` | `['json']` | 可序列化 return objects 的默认 Symfony response formats. |
 
 如果需要自定义 Swagger UI assets、template variables 或 OpenAPI URL，可以把 `SwaggerConfiguration` 替换为自己的 service。
 
@@ -120,8 +119,6 @@ final readonly class PetController
         'summary' => 'Finds pet by ID',
         'description' => 'Returns one pet.',
         'deprecated' => false,
-        'response_status' => 200,
-        'response_formats' => ['json'],
     ])]
     public function show(int $id): PetView
     {
@@ -139,8 +136,6 @@ final readonly class PetController
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | 将 operation 标记为 deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | 将 route 包含到 generated document 中或从中排除. |
-| `response_status` | `int` | 覆盖 generated response status. |
-| `response_formats` | `string\|string[]` | Symfony response formats，例如 `json` 或 `xml`. |
 
 如果没有设置 API option，path 以 `/api/` 开头的 routes 会被视为 API routes。
 
@@ -260,27 +255,43 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 
 ## 响应生成
 
-默认 response generation 保持很小:
+该包只在控制器明确描述返回方式时生成 response 文档:
 
-| Controller return type | Generated response |
+| Controller metadata | Generated response |
 | --- | --- |
-| `void` | Empty response, default status `204`. |
-| Symfony `Response` subclass | 不生成 automatic response content。如果 response 必须手动描述，使用 `#[Operation]`. |
-| Any other named return type | Serialized response body, default status `200`, default format `json`. |
+| `#[Serialize]` | Serialized response body。Status 来自 `Serialize::code`; schema 来自方法 return type. |
+| `#[EmptyResponse]` | Empty response。默认 status 是 `204`. |
+| 没有 OpenAPI attributes 的 Symfony `Response` subclass | 不生成 automatic response content。如果需要描述 response，使用 `#[Operation]` 或 `#[EmptyResponse]`. |
 
-示例:
+Serialized responses 使用 route default `_format` 作为 Symfony response format。如果没有设置 `_format`，使用 `json`。Format 通过 `Request::getMimeTypes()` 转为 media type.
 
 ```php
-#[Route('/api/pets/{id}', options: ['response_status' => 200])]
+use Symfony\Component\HttpKernel\Attribute\Serialize;
+
+#[Route('/api/pets/{id}', format: 'json')]
+#[Serialize(code: 200)]
 public function show(int $id): PetView
 {
     // ...
 }
 ```
 
-如果 route 返回 custom view object，return type 会作为 response schema。
+如果 route 返回 custom view object，`#[Serialize]` 会把 return type 作为 response schema。
 
-如果项目会包装 responses，例如 `{data: ..., meta: ...}`，请替换 `ResponseMetadataResolverInterface` 或 response operation enrichers。
+没有 response body 的 actions 使用 `#[EmptyResponse]`:
+
+```php
+use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+
+#[Route('/api/pets/{id}', methods: ['DELETE'])]
+#[EmptyResponse]
+public function delete(int $id): void
+{
+    // ...
+}
+```
+
+对于 `{data: ..., meta: ...}` 这样的 wrappers，可以添加 custom operation enricher，或用 `#[Operation]` 描述 response。
 
 ## OpenAPI Attributes
 
@@ -289,6 +300,7 @@ public function show(int $id): PetView
 | Attribute | Target | 用途 |
 | --- | --- | --- |
 | `#[Operation]` | class, method | 添加 manual OpenAPI operation fragment. |
+| `#[EmptyResponse]` | class, method | 添加 empty OpenAPI response，默认 `204`. |
 | `#[ItemType]` | property, parameter | 描述 array item type. |
 | `#[SchemaName]` | class | 覆盖 component schema name. |
 | `#[PropertyName]` | property | 覆盖 OpenAPI property name. |
@@ -376,7 +388,6 @@ Symfony Serializer 参考: [Serializer](https://symfony.com/doc/current/serializ
 | Service/interface | 用途 |
 | --- | --- |
 | `RouteMetadataResolverInterface` | 控制 tags、summary、description、deprecation 和 API filtering. |
-| `ResponseMetadataResolverInterface` | 控制 response status 和 response formats. |
 | `OpenApiOperationEnricherInterface` | 添加 request parameters、request bodies、responses 或 custom operation data. |
 | `OpenApiPhpTypeSchemaResolverInterface` | 将 PHP types 转换为 OpenAPI schemas. |
 | `OpenApiPathBuilderInterface` | 将 Symfony route paths 转换为 OpenAPI paths. |

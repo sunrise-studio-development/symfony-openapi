@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
+use Symfony\Component\HttpKernel\Attribute\Serialize;
 
 final readonly class ControllerFixture
 {
@@ -84,6 +85,7 @@ final readonly class ControllerFixture
     ): void {
     }
 
+    #[Serialize(code: 201)]
     public function serializableResponse(): DtoFixture
     {
         return new DtoFixture();

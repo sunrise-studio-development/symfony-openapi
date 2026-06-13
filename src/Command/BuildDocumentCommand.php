@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\Command;
 
+use Override;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 use Sunrise\Symfony\OpenApi\RouteAdapter;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolverInterface;
@@ -27,6 +28,7 @@ final class BuildDocumentCommand extends Command
     /**
      * @inheritDoc
      */
+    #[Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $apiRoutes = [];

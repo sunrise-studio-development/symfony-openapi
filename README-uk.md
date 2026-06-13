@@ -19,6 +19,8 @@ API живе в namespace `Sunrise\Symfony\OpenApi`. Всередині паке
 composer require sunrise-studio/symfony-openapi
 ```
 
+Пакету потрібен `symfony/http-kernel` 8.1 або новіший, тому що документація responses використовує Symfony attribute `#[Serialize]`.
+
 Підключіть bundle:
 
 ```php
@@ -41,7 +43,7 @@ openapi:
 
 | Route | Controller | Призначення |
 | --- | --- | --- |
-| `GET /openapi` | `OpenApiController` | Віддає згенерований OpenAPI JSON document. |
+| `GET /openapi` | `DocumentController` | Віддає згенерований OpenAPI JSON document. |
 | `GET /swagger.html` | `SwaggerController` | Віддає Swagger UI, налаштований на `/openapi`. |
 
 Ці маршрути не потрапляють у generated API document: для них не задано `api: true`, а їхні paths не починаються з `/api/`.
@@ -50,7 +52,7 @@ openapi:
 
 ```yaml
 openapi_document:
-  resource: '@OpenApiBundle/config/routes/openapi.php'
+  resource: '@OpenApiBundle/config/routes/document.php'
 
 swagger_ui:
   resource: '@OpenApiBundle/config/routes/swagger.php'
@@ -85,9 +87,6 @@ parameters:
 | `openapi.initial_operation` | `responses: []` | Базова operation, що об'єднується з кожною generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file для `openapi:build-document`. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Формат PHP `date()` для генерації OpenAPI `example` у схемах дати/часу. |
-| `openapi.default_empty_response_status` | `204` | Статус за замовчуванням для controller methods з `void`. |
-| `openapi.default_response_status` | `200` | Статус за замовчуванням для серіалізованих return objects. |
-| `openapi.default_response_formats` | `['json']` | Symfony response formats за замовчуванням для серіалізованих return objects. |
 
 `SwaggerConfiguration` можна замінити як сервіс, якщо потрібні власні Swagger UI assets, template variables або інший OpenAPI URL.
 
@@ -120,8 +119,6 @@ final readonly class PetController
         'summary' => 'Finds pet by ID',
         'description' => 'Returns one pet.',
         'deprecated' => false,
-        'response_status' => 200,
-        'response_formats' => ['json'],
     ])]
     public function show(int $id): PetView
     {
@@ -139,8 +136,6 @@ final readonly class PetController
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Позначає operation як deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | Включає route у generated document або виключає його. |
-| `response_status` | `int` | Перевизначає generated response status. |
-| `response_formats` | `string\|string[]` | Symfony response formats, наприклад `json` або `xml`. |
 
 Якщо API option не задано, маршрути з path `/api/...` вважаються API routes.
 
@@ -260,27 +255,43 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 
 ## Генерація Відповідей
 
-Генерація responses за замовчуванням навмисно обмежена:
+Пакет описує responses тільки тоді, коли контролер явно показує, як повертається результат.
 
-| Return type контролера | Generated response |
+| Metadata контролера | Generated response |
 | --- | --- |
-| `void` | Empty response, default status `204`. |
-| Symfony `Response` subclass | Automatic response content не генерується. Використовуйте `#[Operation]`, якщо response потрібно описати вручну. |
-| Будь-який інший named return type | Serialized response body, default status `200`, default format `json`. |
+| `#[Serialize]` | Serialized response body. Status береться з `Serialize::code`; schema береться з return type методу. |
+| `#[EmptyResponse]` | Empty response. Status за замовчуванням `204`. |
+| Symfony `Response` subclass без OpenAPI attributes | Automatic response content не генерується. Використовуйте `#[Operation]` або `#[EmptyResponse]`, якщо response потрібно описати. |
 
-Приклад:
+Serialized responses використовують route default `_format` як Symfony response format. Якщо `_format` не задано, використовується `json`. Format перетворюється на media type через `Request::getMimeTypes()`.
 
 ```php
-#[Route('/api/pets/{id}', options: ['response_status' => 200])]
+use Symfony\Component\HttpKernel\Attribute\Serialize;
+
+#[Route('/api/pets/{id}', format: 'json')]
+#[Serialize(code: 200)]
 public function show(int $id): PetView
 {
     // ...
 }
 ```
 
-Якщо route повертає custom view object, return type використовується як response schema.
+Якщо route повертає custom view object, `#[Serialize]` робить return type response schema.
 
-Якщо проєкт обгортає responses, наприклад `{data: ..., meta: ...}`, замініть `ResponseMetadataResolverInterface` або response operation enrichers.
+Для actions без response body використовуйте `#[EmptyResponse]`:
+
+```php
+use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+
+#[Route('/api/pets/{id}', methods: ['DELETE'])]
+#[EmptyResponse]
+public function delete(int $id): void
+{
+    // ...
+}
+```
+
+Для wrappers на кшталт `{data: ..., meta: ...}` додайте custom operation enricher або опишіть response через `#[Operation]`.
 
 ## OpenAPI-Атрибути
 
@@ -289,6 +300,7 @@ public function show(int $id): PetView
 | Attribute | Target | Призначення |
 | --- | --- | --- |
 | `#[Operation]` | class, method | Додає manual OpenAPI operation fragment. |
+| `#[EmptyResponse]` | class, method | Додає empty OpenAPI response, за замовчуванням `204`. |
 | `#[ItemType]` | property, parameter | Описує array item type. |
 | `#[SchemaName]` | class | Перевизначає component schema name. |
 | `#[PropertyName]` | property | Перевизначає OpenAPI property name. |
@@ -376,7 +388,6 @@ public function list(): JsonResponse
 | Service/interface | Призначення |
 | --- | --- |
 | `RouteMetadataResolverInterface` | Керує tags, summary, description, deprecation і API filtering. |
-| `ResponseMetadataResolverInterface` | Керує response status і response formats. |
 | `OpenApiOperationEnricherInterface` | Додає request parameters, request bodies, responses або custom operation data. |
 | `OpenApiPhpTypeSchemaResolverInterface` | Перетворює PHP types на OpenAPI schemas. |
 | `OpenApiPathBuilderInterface` | Перетворює Symfony route paths на OpenAPI paths. |

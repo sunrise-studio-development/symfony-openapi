@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\OperationEnricher;
 
+use Override;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -12,11 +13,12 @@ use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 
-final class MapUploadedFileOperationEnricher implements OpenApiOperationEnricherInterface
+final readonly class MapUploadedFileOperationEnricher implements OpenApiOperationEnricherInterface
 {
     /**
      * @inheritDoc
      */
+    #[Override]
     public function enrichOperation(
         RouteInterface $route,
         ReflectionClass|ReflectionMethod $requestHandler,
@@ -64,6 +66,7 @@ final class MapUploadedFileOperationEnricher implements OpenApiOperationEnricher
         }
     }
 
+    #[Override]
     public function getWeight(): int
     {
         return 10;

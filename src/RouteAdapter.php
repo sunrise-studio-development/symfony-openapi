@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi;
 
+use Override;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\Routing\Route;
 
@@ -16,16 +17,19 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     ) {
     }
 
+    #[Override]
     public function getName(): string
     {
         return $this->name;
     }
 
+    #[Override]
     public function getPath(): string
     {
         return $this->route->getPath();
     }
 
+    #[Override]
     public function getRequestHandler(): mixed
     {
         return $this->route->getDefault('_controller');
@@ -34,6 +38,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getPatterns(): array
     {
         /** @var array<string, string> */
@@ -43,6 +48,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getMethods(): array
     {
         return $this->route->getMethods();
@@ -51,17 +57,20 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getAttributes(): array
     {
         /** @var array<string, mixed> */
         return $this->route->getDefaults();
     }
 
+    #[Override]
     public function hasAttribute(string $name): bool
     {
         return $this->route->hasDefault($name);
     }
 
+    #[Override]
     public function getAttribute(string $name, mixed $default = null): mixed
     {
         return $this->route->hasDefault($name)
@@ -72,6 +81,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function withAddedAttributes(array $attributes): static
     {
         $route = (clone $this->route)->addDefaults($attributes);
@@ -82,6 +92,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getMiddlewares(): array
     {
         return [];
@@ -90,6 +101,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getConsumedMediaTypes(): array
     {
         return [];
@@ -98,6 +110,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getProducedMediaTypes(): array
     {
         return [];
@@ -106,36 +119,43 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getTags(): array
     {
         return $this->metadata->tags;
     }
 
+    #[Override]
     public function getSummary(): string
     {
         return $this->metadata->summary;
     }
 
+    #[Override]
     public function getDescription(): string
     {
         return $this->metadata->description;
     }
 
+    #[Override]
     public function isDeprecated(): bool
     {
         return $this->metadata->isDeprecated;
     }
 
+    #[Override]
     public function isApiRoute(): bool
     {
         return $this->metadata->isApi;
     }
 
+    #[Override]
     public function getPattern(): ?string
     {
         return null;
     }
 
+    #[Override]
     public function getSymfonyRoute(): Route
     {
         return $this->route;

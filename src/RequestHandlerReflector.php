@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi;
 
 use InvalidArgumentException;
+use Override;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -18,18 +19,16 @@ final readonly class RequestHandlerReflector implements RequestHandlerReflectorI
      *
      * @link https://symfony.com/doc/current/controller/service.html
      */
+    #[Override]
     public function reflectRequestHandler(mixed $reference): ReflectionClass|ReflectionMethod
     {
         if (\is_string($reference)) {
             try {
-                $method = \str_contains($reference, '::')
-                    ? $reference
-                    : $reference . '::__invoke';
-
-                /** @psalm-var ReflectionMethod */
-                return \method_exists(ReflectionMethod::class, 'createFromMethodName')
-                    ? ReflectionMethod::createFromMethodName($method)
-                    : new ReflectionMethod($method);
+                return ReflectionMethod::createFromMethodName(
+                    \str_contains($reference, '::')
+                        ? $reference
+                        : $reference . '::__invoke'
+                );
             } catch (ReflectionException) {
             }
         }

@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi\Annotation;
 
 use Attribute;
+use Override;
 use Sunrise\Http\Router\OpenApi\Annotation\OperationInterface;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
 final readonly class EmptyResponse implements OperationInterface
 {
-    private const DEFAULT_CODE = 204;
-    private const DEFAULT_DESCRIPTION = 'The operation was successful.';
+    private const int DEFAULT_CODE = 204;
+    private const string DEFAULT_DESCRIPTION = 'The operation was successful.';
 
     public function __construct(
         private int $code = self::DEFAULT_CODE,
@@ -22,6 +23,7 @@ final readonly class EmptyResponse implements OperationInterface
     /**
      * @inheritDoc
      */
+    #[Override]
     public function getOperation(): array
     {
         return [

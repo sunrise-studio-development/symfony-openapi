@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 final readonly class DocumentController
 {
-    public const ROUTE_PATH = SunriseOpenApiController::ROUTE_PATH;
+    public const string ROUTE_PATH = SunriseOpenApiController::ROUTE_PATH;
 
     public function __construct(
         private OpenApiConfiguration $openApiConfiguration,

@@ -19,6 +19,8 @@ The API lives in the `Sunrise\Symfony\OpenApi` namespace. The package uses the O
 composer require sunrise-studio/symfony-openapi
 ```
 
+The package requires `symfony/http-kernel` 8.1 or newer because response documentation uses Symfony's `#[Serialize]` attribute.
+
 Register the bundle:
 
 ```php
@@ -41,7 +43,7 @@ This imports two routes:
 
 | Route | Controller | Purpose |
 | --- | --- | --- |
-| `GET /openapi` | `OpenApiController` | Serves the generated OpenAPI JSON document. |
+| `GET /openapi` | `DocumentController` | Serves the generated OpenAPI JSON document. |
 | `GET /swagger.html` | `SwaggerController` | Serves Swagger UI configured to read `/openapi`. |
 
 These routes are not included in the generated API document: `api: true` is not set, and their paths do not start with `/api/`.
@@ -50,7 +52,7 @@ If you need only one route, import its file directly:
 
 ```yaml
 openapi_document:
-  resource: '@OpenApiBundle/config/routes/openapi.php'
+  resource: '@OpenApiBundle/config/routes/document.php'
 
 swagger_ui:
   resource: '@OpenApiBundle/config/routes/swagger.php'
@@ -85,9 +87,6 @@ Useful parameters:
 | `openapi.initial_operation` | `responses: []` | Base operation merged into every generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file used by `openapi:build-document`. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | PHP `date()` format used to generate OpenAPI `example` values for date/time schemas. |
-| `openapi.default_empty_response_status` | `204` | Default status for `void` controller methods. |
-| `openapi.default_response_status` | `200` | Default status for serialized return objects. |
-| `openapi.default_response_formats` | `['json']` | Default Symfony response formats for serialized return objects. |
 
 `SwaggerConfiguration` can be replaced as a service if you need custom Swagger UI assets, template variables, or a different OpenAPI URL.
 
@@ -120,8 +119,6 @@ final readonly class PetController
         'summary' => 'Finds pet by ID',
         'description' => 'Returns one pet.',
         'deprecated' => false,
-        'response_status' => 200,
-        'response_formats' => ['json'],
     ])]
     public function show(int $id): PetView
     {
@@ -139,8 +136,6 @@ Supported options:
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Marks an operation as deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | Includes or excludes the route from the generated document. |
-| `response_status` | `int` | Overrides the generated response status. |
-| `response_formats` | `string\|string[]` | Symfony response formats, for example `json` or `xml`. |
 
 If no API option is set, routes whose path starts with `/api/` are treated as API routes.
 
@@ -258,29 +253,45 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 
 The `format` argument is optional. If omitted, the default timestamp format is used.
 
-## Response Generation
+## Responses
 
-Default response generation is intentionally limited:
+The package documents responses only when the controller explicitly describes how the result is returned.
 
-| Controller return type | Generated response |
+| Controller metadata | Generated response |
 | --- | --- |
-| `void` | Empty response, default status `204`. |
-| Symfony `Response` subclass | No automatic response content. Use `#[Operation]` when the response must be documented manually. |
-| Any other named return type | Serialized response body, default status `200`, default format `json`. |
+| `#[Serialize]` | Serialized response body. Status is read from `Serialize::code`; the schema is read from the method return type. |
+| `#[EmptyResponse]` | Empty response. Default status is `204`. |
+| Symfony `Response` subclass without OpenAPI attributes | No automatic response content. Use `#[Operation]` or `#[EmptyResponse]` when the response must be documented. |
 
-Example:
+Serialized responses use the route `_format` default as the Symfony response format. If `_format` is not set, `json` is used. The format is converted to a media type with `Request::getMimeTypes()`.
 
 ```php
-#[Route('/api/pets/{id}', options: ['response_status' => 200])]
+use Symfony\Component\HttpKernel\Attribute\Serialize;
+
+#[Route('/api/pets/{id}', format: 'json')]
+#[Serialize(code: 200)]
 public function show(int $id): PetView
 {
     // ...
 }
 ```
 
-If a route returns a custom view object, the return type is resolved as the response schema.
+If a route returns a custom view object, `#[Serialize]` makes the return type the response schema.
 
-If your project wraps responses, for example `{data: ..., meta: ...}`, replace `ResponseMetadataResolverInterface` or the response operation enrichers.
+Use `#[EmptyResponse]` for actions with no response body:
+
+```php
+use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+
+#[Route('/api/pets/{id}', methods: ['DELETE'])]
+#[EmptyResponse]
+public function delete(int $id): void
+{
+    // ...
+}
+```
+
+For wrappers such as `{data: ..., meta: ...}`, add a custom operation enricher or describe the response with `#[Operation]`.
 
 ## OpenAPI Attributes
 
@@ -289,6 +300,7 @@ The package provides OpenAPI attributes for common schema tasks:
 | Attribute | Target | Purpose |
 | --- | --- | --- |
 | `#[Operation]` | class, method | Adds a manual OpenAPI operation fragment. |
+| `#[EmptyResponse]` | class, method | Adds an empty OpenAPI response, `204` by default. |
 | `#[ItemType]` | property, parameter | Describes array item type. |
 | `#[SchemaName]` | class | Overrides component schema name. |
 | `#[PropertyName]` | property | Overrides OpenAPI property name. |
@@ -376,7 +388,6 @@ The package is built from replaceable services:
 | Service/interface | Purpose |
 | --- | --- |
 | `RouteMetadataResolverInterface` | Controls tags, summary, description, deprecation, and API filtering. |
-| `ResponseMetadataResolverInterface` | Controls response status and response formats. |
 | `OpenApiOperationEnricherInterface` | Adds request parameters, request bodies, responses, or custom operation data. |
 | `OpenApiPhpTypeSchemaResolverInterface` | Converts PHP types to OpenAPI schemas. |
 | `OpenApiPathBuilderInterface` | Converts Symfony route paths to OpenAPI paths. |

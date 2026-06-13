@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\OperationEnricher;
 
+use Override;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -20,6 +21,7 @@ final class MapQueryStringOperationEnricher implements
 {
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
+    #[Override]
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
@@ -29,6 +31,7 @@ final class MapQueryStringOperationEnricher implements
     /**
      * @inheritDoc
      */
+    #[Override]
     public function enrichOperation(
         RouteInterface $route,
         ReflectionClass|ReflectionMethod $requestHandler,
@@ -62,6 +65,7 @@ final class MapQueryStringOperationEnricher implements
         }
     }
 
+    #[Override]
     public function getWeight(): int
     {
         return 20;

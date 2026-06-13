@@ -6,6 +6,7 @@ namespace Sunrise\Symfony\OpenApi\OperationEnricher;
 
 use BackedEnum;
 use DateTimeInterface;
+use Override;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -25,6 +26,7 @@ final class PathVariablesOperationEnricher implements
 {
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
+    #[Override]
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
@@ -34,6 +36,7 @@ final class PathVariablesOperationEnricher implements
     /**
      * @inheritDoc
      */
+    #[Override]
     public function enrichOperation(
         RouteInterface $route,
         ReflectionClass|ReflectionMethod $requestHandler,
@@ -79,6 +82,7 @@ final class PathVariablesOperationEnricher implements
         }
     }
 
+    #[Override]
     public function getWeight(): int
     {
         return 40;

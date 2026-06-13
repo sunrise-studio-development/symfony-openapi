@@ -1,9 +1,6 @@
 parameters:
-  reportUnmatchedIgnoredErrors: false
   ignoreErrors:
     -
       identifier: offsetAccess.nonOffsetAccessible
     -
       identifier: return.unusedType
-    -
-      identifier: function.alreadyNarrowedType

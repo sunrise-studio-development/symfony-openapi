@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver;
 
+use Override;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Reflector;
@@ -24,11 +25,13 @@ final readonly class TimestampPhpTypeSchemaResolver implements
     ) {
     }
 
+    #[Override]
     public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
     {
         $this->timestampPhpTypeSchemaResolver->setOpenApiConfiguration($openApiConfiguration);
     }
 
+    #[Override]
     public function supportsPhpType(Type $phpType, Reflector $phpTypeHolder): bool
     {
         return $this->timestampPhpTypeSchemaResolver->supportsPhpType($phpType, $phpTypeHolder);
@@ -37,6 +40,7 @@ final readonly class TimestampPhpTypeSchemaResolver implements
     /**
      * @inheritDoc
      */
+    #[Override]
     public function resolvePhpTypeSchema(Type $phpType, Reflector $phpTypeHolder): array
     {
         $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
@@ -57,6 +61,7 @@ final readonly class TimestampPhpTypeSchemaResolver implements
         return $phpTypeSchema;
     }
 
+    #[Override]
     public function getWeight(): int
     {
         return $this->timestampPhpTypeSchemaResolver->getWeight();

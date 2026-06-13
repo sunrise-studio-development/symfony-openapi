@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\RouterInterface;
 
-final class OpenApiBuildDocumentCommandTest extends TestCase
+final class BuildDocumentCommandTest extends TestCase
 {
     public function testExecute(): void
     {

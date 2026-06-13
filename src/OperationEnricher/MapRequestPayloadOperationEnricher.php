@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\OperationEnricher;
 
+use Override;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -21,10 +22,11 @@ final class MapRequestPayloadOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private const DEFAULT_ACCEPT_FORMATS = ['json'];
+    private const array DEFAULT_ACCEPT_FORMATS = ['json'];
 
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
+    #[Override]
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
@@ -34,6 +36,7 @@ final class MapRequestPayloadOperationEnricher implements
     /**
      * @inheritDoc
      */
+    #[Override]
     public function enrichOperation(
         RouteInterface $route,
         ReflectionClass|ReflectionMethod $requestHandler,
@@ -87,6 +90,7 @@ final class MapRequestPayloadOperationEnricher implements
         }
     }
 
+    #[Override]
     public function getWeight(): int
     {
         return 10;

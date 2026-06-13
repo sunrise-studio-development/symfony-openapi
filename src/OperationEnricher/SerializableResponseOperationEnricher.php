@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\OperationEnricher;
 
+use Override;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
@@ -22,17 +23,19 @@ final class SerializableResponseOperationEnricher implements
     OpenApiConfigurationAwareInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private const DEFAULT_RESPONSE_FORMAT = 'json';
-    private const FALLBACK_RESPONSE_MEDIA_TYPE = 'application/json';
+    private const string DEFAULT_RESPONSE_FORMAT = 'json';
+    private const string FALLBACK_RESPONSE_MEDIA_TYPE = 'application/json';
 
     private OpenApiConfiguration $openApiConfiguration;
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
+    #[Override]
     public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
     {
         $this->openApiConfiguration = $openApiConfiguration;
     }
 
+    #[Override]
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
@@ -42,6 +45,7 @@ final class SerializableResponseOperationEnricher implements
     /**
      * @inheritDoc
      */
+    #[Override]
     public function enrichOperation(
         RouteInterface $route,
         ReflectionClass|ReflectionMethod $requestHandler,
@@ -76,6 +80,7 @@ final class SerializableResponseOperationEnricher implements
         ];
     }
 
+    #[Override]
     public function getWeight(): int
     {
         return 20;

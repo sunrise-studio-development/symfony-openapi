@@ -30,15 +30,3 @@ build:
       tests:
         override:
           - command: composer test
-    php83:
-      environment:
-        php: '8.3.30'
-      tests:
-        override:
-          - command: composer test
-    php82:
-      environment:
-        php: '8.2.29'
-      tests:
-        override:
-          - command: composer test

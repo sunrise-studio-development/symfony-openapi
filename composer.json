@@ -11,20 +11,19 @@
     }
   ],
   "require": {
-    "php": ">=8.2",
+    "php": ">=8.4.1",
     "sunrise/http-router": "dev-release/v3.3.0",
-    "symfony/config": "^7.1 || ^8.0",
-    "symfony/dependency-injection": "^7.1 || ^8.0",
-    "symfony/http-foundation": "^7.1 || ^8.0",
-    "symfony/http-kernel": "^7.1 || ^8.0",
-    "symfony/routing": "^7.1 || ^8.0",
-    "symfony/uid": "^7.1 || ^8.0"
+    "symfony/config": "^7.4 || ^8.0",
+    "symfony/dependency-injection": "^8.1",
+    "symfony/http-foundation": "^7.4 || ^8.0",
+    "symfony/http-kernel": "^8.1",
+    "symfony/routing": "^7.4 || ^8.0",
+    "symfony/uid": "^7.4 || ^8.0"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.2",
-    "phpunit/phpunit": "^11.5",
+    "phpunit/phpunit": "^12.5 || ^13.2",
     "slevomat/coding-standard": "^8.29",
-    "squizlabs/php_codesniffer": "^4.0",
     "vimeo/psalm": "^6.16"
   },
   "autoload": {
@@ -39,7 +38,7 @@
   },
   "scripts": {
     "phpcs": "@php phpcs --colors",
-    "psalm": "@php psalm --no-cache",
+    "psalm": "@php psalm --no-cache --threads=1",
     "phpstan": "@php phpstan analyse src --level=9 --memory-limit=-1",
     "phpunit": "@php phpunit --colors=always",
     "test": [

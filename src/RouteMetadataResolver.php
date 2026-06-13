@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi;
 
+use Override;
 use Symfony\Component\Routing\Route;
 
 final readonly class RouteMetadataResolver implements RouteMetadataResolverInterface
 {
+    #[Override]
     public function resolveRouteMetadata(Route $route): RouteMetadata
     {
         /** @var array<array-key, string>|string|null $tags */
