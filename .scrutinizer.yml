@@ -14,10 +14,11 @@ build:
         php: '8.4.21'
       dependencies:
         before:
-          - pecl install xdebug
+          - pecl channel-update pecl.php.net
+          - pecl install pcov
       tests:
         override:
-          - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
+          - command: php -d pcov.enabled=1 -d pcov.directory=src vendor/bin/phpunit --coverage-clover coverage.xml
             coverage:
               file: coverage.xml
               format: clover
