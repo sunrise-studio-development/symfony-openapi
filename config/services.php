@@ -23,20 +23,21 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\IntPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\ObjectPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\StringPhpTypeSchemaResolver;
 use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\SymfonyUidPhpTypeSchemaResolver;
-use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SunriseTimestampPhpTypeSchemaResolver;
+use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SunriseTimestampResolver;
 use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 use Sunrise\Symfony\OpenApi\Command\BuildDocumentCommand;
 use Sunrise\Symfony\OpenApi\Controller\DocumentController;
 use Sunrise\Symfony\OpenApi\Controller\SwaggerController;
 use Sunrise\Symfony\OpenApi\OpenApiPathBuilder;
+use Sunrise\Symfony\OpenApi\OperationEnricher\EmptyResponseOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapQueryParameterOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapQueryStringOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapRequestPayloadOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\MapUploadedFileOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\PathVariablesOperationEnricher;
 use Sunrise\Symfony\OpenApi\OperationEnricher\SerializableResponseOperationEnricher;
-use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SymfonyTimestampPhpTypeSchemaResolver;
+use Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver as SymfonyTimestampResolver;
 use Sunrise\Symfony\OpenApi\RequestHandlerReflector;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolver;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolverInterface;
@@ -69,8 +70,8 @@ return static function (ContainerConfigurator $container): void {
 
     $parameters->set('openapi.document_filename', '%kernel.project_dir%/var/openapi.json');
     $parameters->set('openapi.document_uri', DocumentController::ROUTE_PATH);
-
     $parameters->set('openapi.default_timestamp_format', DateTimeInterface::RFC3339_EXTENDED);
+    $parameters->set('openapi.default_empty_response_status_code', 204);
 
     // ***
 
@@ -94,8 +95,8 @@ return static function (ContainerConfigurator $container): void {
     $services->set(IntPhpTypeSchemaResolver::class);
     $services->set(ObjectPhpTypeSchemaResolver::class);
     $services->set(StringPhpTypeSchemaResolver::class);
-    $services->set(SunriseTimestampPhpTypeSchemaResolver::class);
-    $services->set(SymfonyTimestampPhpTypeSchemaResolver::class);
+    $services->set(SunriseTimestampResolver::class);
+    $services->set(SymfonyTimestampResolver::class);
     $services->set(SymfonyUidPhpTypeSchemaResolver::class);
 
     $services->set(OpenApiPhpTypeSchemaResolverManagerInterface::class, OpenApiPhpTypeSchemaResolverManager::class)
@@ -108,13 +109,15 @@ return static function (ContainerConfigurator $container): void {
             service(IntPhpTypeSchemaResolver::class),
             service(ObjectPhpTypeSchemaResolver::class),
             service(StringPhpTypeSchemaResolver::class),
-            service(SymfonyTimestampPhpTypeSchemaResolver::class),
+            service(SymfonyTimestampResolver::class),
             service(SymfonyUidPhpTypeSchemaResolver::class),
         ])
         ->arg('$useDefaultPhpTypeSchemaResolvers', false);
 
     // ***
 
+    $services->set(EmptyResponseOperationEnricher::class)
+        ->arg('$defaultResponseStatusCode', '%openapi.default_empty_response_status_code%');
     $services->set(MapQueryParameterOperationEnricher::class);
     $services->set(MapQueryStringOperationEnricher::class);
     $services->set(MapRequestPayloadOperationEnricher::class);
@@ -124,6 +127,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(OpenApiOperationEnricherManagerInterface::class, OpenApiOperationEnricherManager::class)
         ->arg('$operationEnrichers', [
+            service(EmptyResponseOperationEnricher::class),
             service(MapQueryParameterOperationEnricher::class),
             service(MapQueryStringOperationEnricher::class),
             service(MapRequestPayloadOperationEnricher::class),

@@ -88,6 +88,7 @@ parameters:
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file для `openapi:build-document`. |
 | `openapi.document_uri` | `/openapi` | Public URI сгенерированного документа. Swagger UI использует его для загрузки документа. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Формат PHP `date()` для генерации OpenAPI `example` у схем даты/времени. |
+| `openapi.default_empty_response_status_code` | `204` | Status code, который генерируется для методов контроллера с явным return type `void`. |
 
 `SwaggerConfiguration` можно заменить как сервис, если нужны свои Swagger UI assets или template variables.
 
@@ -288,13 +289,14 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 
 ## Responses
 
-Пакет описывает responses только тогда, когда контроллер явно показывает, как возвращается результат.
+Пакет описывает responses тогда, когда типы контроллера явно показывают response contract.
 
 | Metadata контроллера | Generated response |
 | --- | --- |
 | `#[Serialize]` | Serialized response body. Status берется из `Serialize::code`; schema берется из return type метода. |
-| `#[EmptyResponse]` | Empty response. Status по умолчанию `204`. |
-| Symfony `Response` subclass без OpenAPI attributes | Automatic response content не генерируется. Используйте `#[Operation]` или `#[EmptyResponse]`, если response нужно описать. |
+| Явный return type `void` | Empty response. Status по умолчанию `204`, настраивается через `openapi.default_empty_response_status_code`. |
+| `#[EmptyResponse]` | Ручной override empty response для custom status или description. |
+| Symfony `Response` subclass без OpenAPI attributes | Automatic response content не генерируется. Используйте `#[Operation]` или `#[EmptyResponse]`, если response нужно описать вручную. |
 
 Serialized responses используют route default `_format` как Symfony response format. Если `_format` не задан, используется `json`. Format преобразуется в media type через `Request::getMimeTypes()`.
 
@@ -311,16 +313,31 @@ public function show(int $id): PetView
 
 Если route возвращает custom view object, `#[Serialize]` делает return type response schema.
 
-Для actions без response body используйте `#[EmptyResponse]`:
+Для actions без response body используйте явный return type `void`:
 
 ```php
-use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
-
 #[Route('/api/pets/{id}', methods: ['DELETE'])]
-#[EmptyResponse]
 public function delete(int $id): void
 {
     // ...
+}
+```
+
+Это только документирует API. Сам Symfony не превращает `null` result контроллера в `204`. В приложении лучше добавить маленький listener на `KernelEvents::VIEW`, который превращает `null` result в `new Response(status: 204)`. Такое runtime-поведение выходит за рамки настоящего пакета и по смыслу могло бы поставляться самим Symfony рядом с `SerializeControllerResultAttributeListener`.
+
+Менее domain-oriented альтернатива — самостоятельно вернуть `new Response(status: 204)` и использовать `#[EmptyResponse]`, когда нужно описать custom empty response:
+
+```php
+use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+use Symfony\Component\HttpFoundation\Response;
+
+#[Route('/api/jobs/{id}', methods: ['POST'])]
+#[EmptyResponse(202, 'The job was accepted.')]
+public function accept(int $id): Response
+{
+    // ...
+
+    return new Response(status: 202);
 }
 ```
 

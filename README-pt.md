@@ -88,6 +88,7 @@ Parâmetros úteis:
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file usado por `openapi:build-document`. |
 | `openapi.document_uri` | `/openapi` | Public URI do documento gerado. Swagger UI usa esse URI para carregar o documento. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Formato PHP `date()` usado para gerar valores OpenAPI `example` para schemas de data/hora. |
+| `openapi.default_empty_response_status_code` | `204` | Status code gerado para métodos de controller com return type explícito `void`. |
 
 `SwaggerConfiguration` pode ser substituído como serviço se você precisar de Swagger UI assets ou template variables.
 
@@ -293,7 +294,8 @@ O pacote documenta responses apenas quando o controlador descreve explicitamente
 | Metadata do controlador | Generated response |
 | --- | --- |
 | `#[Serialize]` | Serialized response body. O status é lido de `Serialize::code`; a schema é lida do return type do método. |
-| `#[EmptyResponse]` | Empty response. Status padrão `204`. |
+| Return type explícito `void` | Empty response. Status padrão `204`, configurável com `openapi.default_empty_response_status_code`. |
+| `#[EmptyResponse]` | Override manual de empty response para custom status ou description. |
 | Symfony `Response` subclass sem OpenAPI attributes | Automatic response content não é gerado. Use `#[Operation]` ou `#[EmptyResponse]` quando a response precisa ser documentada. |
 
 Serialized responses usam o route default `_format` como Symfony response format. Se `_format` não for definido, `json` é usado. O format é convertido para media type com `Request::getMimeTypes()`.
@@ -311,16 +313,29 @@ public function show(int $id): PetView
 
 Se uma route retorna um custom view object, `#[Serialize]` torna o return type a response schema.
 
-Use `#[EmptyResponse]` para actions sem response body:
+Use um return type explícito `void` para actions sem response body:
 
 ```php
-use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
-
 #[Route('/api/pets/{id}', methods: ['DELETE'])]
-#[EmptyResponse]
 public function delete(int $id): void
 {
     // ...
+}
+```
+
+Isso apenas documenta a API. O Symfony não converte um resultado `null` do controller em `204` por conta própria. Na aplicação, prefira um pequeno listener para `KernelEvents::VIEW` que converta um resultado `null` em `new Response(status: 204)`. Esse comportamento runtime está fora deste pacote e faria sentido no Symfony junto de `SerializeControllerResultAttributeListener`.
+
+Como alternativa menos orientada ao domínio, retorne `new Response(status: 204)` manualmente e use `#[EmptyResponse]` quando precisar documentar uma custom empty response:
+
+```php
+use Symfony\Component\HttpFoundation\Response;
+use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+
+#[Route('/api/jobs/{id}', methods: ['POST'])]
+#[EmptyResponse(202, 'The job was accepted.')]
+public function accept(int $id): Response
+{
+    return new Response(status: 202);
 }
 ```
 

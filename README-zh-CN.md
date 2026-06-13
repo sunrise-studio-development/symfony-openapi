@@ -88,6 +88,7 @@ parameters:
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | `openapi:build-document` 使用的 output file. |
 | `openapi.document_uri` | `/openapi` | 生成文档的 public URI。Swagger UI 使用它加载文档。 |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | 用于为 date/time schemas 生成 OpenAPI `example` 的 PHP `date()` 格式. |
+| `openapi.default_empty_response_status_code` | `204` | 为显式 `void` return type 的 controller methods 生成的 status code. |
 
 如果需要自定义 Swagger UI assets 或 template variables，可以把 `SwaggerConfiguration` 替换为自己的 service。
 
@@ -293,7 +294,8 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 | Controller metadata | Generated response |
 | --- | --- |
 | `#[Serialize]` | Serialized response body。Status 来自 `Serialize::code`; schema 来自方法 return type. |
-| `#[EmptyResponse]` | Empty response。默认 status 是 `204`. |
+| 显式 `void` return type | Empty response。默认 status 是 `204`，可通过 `openapi.default_empty_response_status_code` 配置. |
+| `#[EmptyResponse]` | 为 custom status 或 description 手动 override empty response. |
 | 没有 OpenAPI attributes 的 Symfony `Response` subclass | 不生成 automatic response content。如果需要描述 response，使用 `#[Operation]` 或 `#[EmptyResponse]`. |
 
 Serialized responses 使用 route default `_format` 作为 Symfony response format。如果没有设置 `_format`，使用 `json`。Format 通过 `Request::getMimeTypes()` 转为 media type.
@@ -311,16 +313,29 @@ public function show(int $id): PetView
 
 如果 route 返回 custom view object，`#[Serialize]` 会把 return type 作为 response schema。
 
-没有 response body 的 actions 使用 `#[EmptyResponse]`:
+没有 response body 的 actions 使用显式 `void` return type:
 
 ```php
-use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
-
 #[Route('/api/pets/{id}', methods: ['DELETE'])]
-#[EmptyResponse]
 public function delete(int $id): void
 {
     // ...
+}
+```
+
+这只负责文档生成。Symfony 自身不会把 controller 的 `null` result 转成 `204`。在应用中，建议添加一个很小的 `KernelEvents::VIEW` listener，把 `null` result 转成 `new Response(status: 204)`。这个 runtime 行为不属于本包职责，它更适合由 Symfony 像 `SerializeControllerResultAttributeListener` 那样提供。
+
+作为不那么 domain-oriented 的替代方案，可以手动返回 `new Response(status: 204)`，并在需要描述 custom empty response 时使用 `#[EmptyResponse]`:
+
+```php
+use Symfony\Component\HttpFoundation\Response;
+use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+
+#[Route('/api/jobs/{id}', methods: ['POST'])]
+#[EmptyResponse(202, 'The job was accepted.')]
+public function accept(int $id): Response
+{
+    return new Response(status: 202);
 }
 ```
 

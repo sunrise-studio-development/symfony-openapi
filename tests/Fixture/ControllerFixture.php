@@ -133,4 +133,8 @@ final readonly class ControllerFixture
     {
         return new JsonResponse();
     }
+
+    public function emptyResponse(): void
+    {
+    }
 }
