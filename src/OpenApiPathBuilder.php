@@ -7,9 +7,6 @@ namespace Sunrise\Symfony\OpenApi;
 use Sunrise\Http\Router\OpenApi\OpenApiPathBuilderInterface;
 use Sunrise\Http\Router\RouteInterface;
 
-/**
- * @since 1.0.0
- */
 final readonly class OpenApiPathBuilder implements OpenApiPathBuilderInterface
 {
     /**

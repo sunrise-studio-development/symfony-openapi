@@ -10,9 +10,6 @@ use Sunrise\Http\Router\OpenApi\SwaggerConfiguration;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-/**
- * @since 1.0.0
- */
 final readonly class SwaggerController
 {
     public const ROUTE_PATH = SunriseSwaggerController::ROUTE_PATH;

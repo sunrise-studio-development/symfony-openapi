@@ -19,19 +19,16 @@ use Sunrise\Http\Router\RouteInterface;
 use Sunrise\Symfony\OpenApi\SymfonyRouteAwareInterface;
 use Symfony\Component\Uid\AbstractUid;
 
-/**
- * @since 1.0.0
- */
 final class PathVariablesOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
+    private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -107,7 +104,7 @@ final class PathVariablesOperationEnricher implements
             return null;
         }
 
-        return $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
+        return $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
             TypeFactory::fromPhpTypeReflection($parameter->getType()),
             $parameter,
         );

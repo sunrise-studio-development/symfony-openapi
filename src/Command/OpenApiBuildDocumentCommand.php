@@ -13,15 +13,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Routing\RouterInterface;
 
-/**
- * @since 1.0.0
- */
 #[AsCommand('openapi:build-document', 'Builds the OpenAPI document.')]
 final class OpenApiBuildDocumentCommand extends Command
 {
     public function __construct(
         private readonly RouterInterface $router,
-        private readonly OpenApiDocumentManagerInterface $openApiDocumentManager,
+        private readonly OpenApiDocumentManagerInterface $documentManager,
         private readonly RouteMetadataResolverInterface $routeMetadataResolver,
     ) {
         parent::__construct();
@@ -40,8 +37,8 @@ final class OpenApiBuildDocumentCommand extends Command
             }
         }
 
-        $this->openApiDocumentManager->saveDocument(
-            $this->openApiDocumentManager->buildDocument($apiRoutes)
+        $this->documentManager->saveDocument(
+            $this->documentManager->buildDocument($apiRoutes)
         );
 
         $output->writeln('Done.');

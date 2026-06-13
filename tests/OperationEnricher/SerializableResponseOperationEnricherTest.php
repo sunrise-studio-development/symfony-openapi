@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi\Tests\OperationEnricher\ResponseOperationEnricher;
 
 use PHPUnit\Framework\TestCase;
-use Sunrise\Symfony\OpenApi\OperationEnricher\ResponseOperationEnricher\SerializableResponseOperationEnricher;
+use Sunrise\Symfony\ApiFoundation\OperationEnricher\SerializableResponseOperationEnricher;
 use Sunrise\Symfony\OpenApi\ResponseMetadata;
 use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Sunrise\Symfony\OpenApi\Tests\Fixture\DtoFixture;
@@ -22,7 +22,7 @@ final class SerializableResponseOperationEnricherTest extends TestCase
         $responseMetadataResolver = $this->createMock(ResponseMetadataResolverInterface::class);
         $responseMetadataResolver->method('resolveResponseMetadata')->willReturn(new ResponseMetadata(201, ['json']));
 
-        $operationEnricher = new SerializableResponseOperationEnricher($responseMetadataResolver, 200, ['xml']);
+        $operationEnricher = new SerializableResponseOperationEnricher(['xml']);
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
         $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(
@@ -50,7 +50,7 @@ final class SerializableResponseOperationEnricherTest extends TestCase
         $responseMetadataResolver = $this->createMock(ResponseMetadataResolverInterface::class);
         $responseMetadataResolver->method('resolveResponseMetadata')->willReturn(new ResponseMetadata(null, []));
 
-        $operationEnricher = new SerializableResponseOperationEnricher($responseMetadataResolver, 200, ['json']);
+        $operationEnricher = new SerializableResponseOperationEnricher(['json']);
         $operationEnricher->setOpenApiConfiguration(self::createOpenApiConfiguration());
         $operationEnricher->setOpenApiPhpTypeSchemaResolverManager($this->mockPhpTypeSchemaResolverManager());
         $operationEnricher->enrichOperation(

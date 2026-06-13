@@ -14,19 +14,16 @@ use Sunrise\Http\Router\OpenApi\TypeFactory;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\HttpKernel\Attribute\MapQueryString;
 
-/**
- * @since 1.0.0
- */
 final class MapQueryStringOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
+    private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -53,7 +50,7 @@ final class MapQueryStringOperationEnricher implements
             $operation['parameters'][] = [
                 'in' => 'query',
                 'name' => $mapQueryString->key ?? $requestHandlerParameter->name,
-                'schema' => $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
+                'schema' => $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
                     TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType()),
                     $requestHandlerParameter,
                 ),

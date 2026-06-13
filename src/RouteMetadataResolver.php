@@ -6,15 +6,12 @@ namespace Sunrise\Symfony\OpenApi;
 
 use Symfony\Component\Routing\Route;
 
-/**
- * @since 1.0.0
- */
 final readonly class RouteMetadataResolver implements RouteMetadataResolverInterface
 {
     public function resolveRouteMetadata(Route $route): RouteMetadata
     {
         /** @var array<array-key, string>|string|null $tags */
-        $tags = $route->getOption('tags');
+        $tags = $route->getOption('tag') ?? $route->getOption('tags');
 
         /** @var string|null $summary */
         $summary = $route->getOption('summary');

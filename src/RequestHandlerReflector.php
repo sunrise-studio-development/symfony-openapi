@@ -11,9 +11,6 @@ use ReflectionMethod;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 
-/**
- * @since 1.0.0
- */
 final readonly class RequestHandlerReflector implements RequestHandlerReflectorInterface
 {
     /**

@@ -7,9 +7,6 @@ namespace Sunrise\Symfony\OpenApi;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\Routing\Route;
 
-/**
- * @since 1.0.0
- */
 final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareInterface
 {
     public function __construct(

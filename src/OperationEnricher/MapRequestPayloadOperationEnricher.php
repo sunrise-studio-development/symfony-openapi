@@ -17,30 +17,18 @@ use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 
-/**
- * @since 1.0.0
- */
 final class MapRequestPayloadOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    /**
-     * @var array<array-key, string>
-     */
-    public const DEFAULT_ACCEPT_FORMATS = ['json'];
+    private const DEFAULT_ACCEPT_FORMATS = ['json'];
 
-    private OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager;
-
-    public function __construct(
-        /** @var array<array-key, string> */
-        private readonly array $defaultAcceptFormats = self::DEFAULT_ACCEPT_FORMATS,
-    ) {
-    }
+    private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
     public function setOpenApiPhpTypeSchemaResolverManager(
         OpenApiPhpTypeSchemaResolverManagerInterface $openApiPhpTypeSchemaResolverManager,
     ): void {
-        $this->openApiPhpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
+        $this->phpTypeSchemaResolverManager = $openApiPhpTypeSchemaResolverManager;
     }
 
     /**
@@ -71,19 +59,19 @@ final class MapRequestPayloadOperationEnricher implements
             ) {
                 $requestBodySchema = [
                     'type' => Type::OAS_TYPE_NAME_ARRAY,
-                    'items' => $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
+                    'items' => $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
                         new Type($mapRequestPayload->type),
                         $requestHandlerParameter,
                     )
                 ];
             } else {
-                $requestBodySchema = $this->openApiPhpTypeSchemaResolverManager->resolvePhpTypeSchema(
+                $requestBodySchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
                     TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType()),
                     $requestHandlerParameter,
                 );
             }
 
-            $acceptFormats = (array) $mapRequestPayload->acceptFormat ?: $this->defaultAcceptFormats;
+            $acceptFormats = (array) $mapRequestPayload->acceptFormat ?: self::DEFAULT_ACCEPT_FORMATS;
 
             foreach (self::getMimeTypesForFormats($acceptFormats) as $mimeType) {
                 $operation['requestBody']['content'][$mimeType] = [
