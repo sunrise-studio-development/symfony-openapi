@@ -377,6 +377,18 @@ public function list(): JsonResponse
 
 对于共享的 error response，可以用 `#[Operation]` 或 `openapi.initial_operation` 描述 `default` response：
 
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.initial_operation:
+    responses:
+      default:
+        description: The operation was unsuccessful.
+        content:
+          application/json:
+            schema: App\View\ErrorView
+```
+
 ```php
 use App\View\ErrorView;
 use Sunrise\Symfony\OpenApi\Annotation\Operation;
@@ -398,6 +410,8 @@ final readonly class PetController
 {
 }
 ```
+
+在 YAML/PHP arrays 中，schema value 可以是 PHP type string。当字符串包含 `\` 时，它会被当作 PHP type。对于没有 namespace 的 class，请使用前导 backslash，例如 `\AppErrorView`。在 PHP attributes 中，如果需要显式 type object，请使用 `new Type(ErrorView::class)`。
 
 ## PHP Type Schema Resolvers
 

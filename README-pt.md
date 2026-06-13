@@ -377,6 +377,18 @@ Recomendamos manter a API previsível: uma action bem-sucedida deve retornar um 
 
 Para um error response comum, descreva um `default` response com `#[Operation]` ou com `openapi.initial_operation`:
 
+```yaml
+# config/packages/openapi.yaml
+parameters:
+  openapi.initial_operation:
+    responses:
+      default:
+        description: The operation was unsuccessful.
+        content:
+          application/json:
+            schema: App\View\ErrorView
+```
+
 ```php
 use App\View\ErrorView;
 use Sunrise\Symfony\OpenApi\Annotation\Operation;
@@ -398,6 +410,8 @@ final readonly class PetController
 {
 }
 ```
+
+Em arrays YAML/PHP, o valor de schema pode ser um PHP type string. Ele é tratado como PHP type quando a string contém `\`. Para uma classe sem namespace, use um backslash inicial, por exemplo `\AppErrorView`. Em PHP attributes, use `new Type(ErrorView::class)` quando precisar de um type object explícito.
 
 ## PHP Type Schema Resolvers
 
