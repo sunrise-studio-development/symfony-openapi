@@ -11,7 +11,10 @@ build:
           - php-scrutinizer-run
     coverage:
       environment:
-        php: '8.3.30'
+        php: '8.4.21'
+      dependencies:
+        before:
+          - pecl install xdebug
       tests:
         override:
           - command: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-clover coverage.xml
