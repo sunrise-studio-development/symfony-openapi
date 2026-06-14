@@ -21,7 +21,7 @@ final class MapRequestPayloadOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private const DEFAULT_ACCEPT_FORMATS = ['json'];
+    private const DEFAULT_REQUEST_FORMATS = ['json'];
 
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 
@@ -71,11 +71,15 @@ final class MapRequestPayloadOperationEnricher implements
                 );
             }
 
-            $acceptFormats = (array) $mapRequestPayload->acceptFormat ?: self::DEFAULT_ACCEPT_FORMATS;
-            foreach (self::getMimeTypesForFormats($acceptFormats) as $mimeType) {
-                $operation['requestBody']['content'][$mimeType] = [
-                    'schema' => $requestBodySchema,
-                ];
+            /** @var string|null $routeFormat */
+            $routeFormat = $route->getAttribute('_format');
+
+            $requestFormats = (array) $mapRequestPayload->acceptFormat
+                ?: (array) $routeFormat
+                ?: self::DEFAULT_REQUEST_FORMATS;
+
+            foreach (self::getMediaTypesForFormats($requestFormats) as $mediaType) {
+                $operation['requestBody']['content'][$mediaType]['schema'] = $requestBodySchema;
             }
 
             if (!$requestHandlerParameter->isDefaultValueAvailable() && !$requestHandlerParameter->allowsNull()) {
@@ -97,7 +101,7 @@ final class MapRequestPayloadOperationEnricher implements
      *
      * @return array<array-key, string>
      */
-    private static function getMimeTypesForFormats(array $formats): array
+    private static function getMediaTypesForFormats(array $formats): array
     {
         $result = [];
         foreach ($formats as $format) {

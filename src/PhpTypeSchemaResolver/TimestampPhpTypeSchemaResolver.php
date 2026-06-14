@@ -8,7 +8,6 @@ use Override;
 use ReflectionAttribute;
 use ReflectionParameter;
 use Reflector;
-use Sunrise\Http\Router\OpenApi\Exception\UnsupportedPhpTypeException;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiConfigurationAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
@@ -16,25 +15,25 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaReso
 use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Symfony\Component\HttpKernel\Attribute\MapDateTime;
 
-final class TimestampPhpTypeSchemaResolver implements
+final readonly class TimestampPhpTypeSchemaResolver implements
     OpenApiPhpTypeSchemaResolverInterface,
     OpenApiConfigurationAwareInterface
 {
     public function __construct(
-        private readonly SunrisePhpTypeSchemaResolver $timestampPhpTypeSchemaResolver,
+        private SunrisePhpTypeSchemaResolver $sunrisePhpTypeSchemaResolver,
     ) {
     }
 
     #[Override]
     public function setOpenApiConfiguration(OpenApiConfiguration $openApiConfiguration): void
     {
-        $this->timestampPhpTypeSchemaResolver->setOpenApiConfiguration($openApiConfiguration);
+        $this->sunrisePhpTypeSchemaResolver->setOpenApiConfiguration($openApiConfiguration);
     }
 
     #[Override]
     public function supportsPhpType(TypeInterface $phpType, Reflector $phpTypeHolder): bool
     {
-        return $this->timestampPhpTypeSchemaResolver->supportsPhpType($phpType, $phpTypeHolder);
+        return $this->sunrisePhpTypeSchemaResolver->supportsPhpType($phpType, $phpTypeHolder);
     }
 
     /**
@@ -43,9 +42,7 @@ final class TimestampPhpTypeSchemaResolver implements
     #[Override]
     public function resolvePhpTypeSchema(TypeInterface $phpType, Reflector $phpTypeHolder): array
     {
-        $this->supportsPhpType($phpType, $phpTypeHolder) or throw new UnsupportedPhpTypeException();
-
-        $phpTypeSchema = $this->timestampPhpTypeSchemaResolver->resolvePhpTypeSchema($phpType, $phpTypeHolder);
+        $phpTypeSchema = $this->sunrisePhpTypeSchemaResolver->resolvePhpTypeSchema($phpType, $phpTypeHolder);
 
         if ($phpTypeHolder instanceof ReflectionParameter) {
             /** @var list<ReflectionAttribute<MapDateTime>> $annotations */
@@ -64,6 +61,6 @@ final class TimestampPhpTypeSchemaResolver implements
     #[Override]
     public function getWeight(): int
     {
-        return $this->timestampPhpTypeSchemaResolver->getWeight();
+        return $this->sunrisePhpTypeSchemaResolver->getWeight();
     }
 }

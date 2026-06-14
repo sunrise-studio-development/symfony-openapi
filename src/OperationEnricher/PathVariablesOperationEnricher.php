@@ -42,11 +42,11 @@ final class PathVariablesOperationEnricher implements
         ReflectionClass|ReflectionMethod $requestHandler,
         array &$operation,
     ): void {
-        if (! $route instanceof SymfonyRouteAwareInterface) {
+        if (! $requestHandler instanceof ReflectionMethod) {
             return;
         }
 
-        if (! $requestHandler instanceof ReflectionMethod) {
+        if (! $route instanceof SymfonyRouteAwareInterface) {
             return;
         }
 

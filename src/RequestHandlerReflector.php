@@ -30,6 +30,7 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
                     return new ReflectionMethod($method);
                 }
 
+                /** @psalm-var ReflectionMethod */
                 return ReflectionMethod::createFromMethodName($method);
             } catch (ReflectionException) {
             }

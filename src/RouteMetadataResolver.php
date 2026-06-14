@@ -12,8 +12,9 @@ final readonly class RouteMetadataResolver implements RouteMetadataResolverInter
     #[Override]
     public function resolveRouteMetadata(Route $route): RouteMetadata
     {
-        /** @var array<array-key, string>|string|null $tags */
-        $tags = $route->getOption('tag') ?? $route->getOption('tags');
+        /** @var string|array<array-key, string>|null $tags */
+        $tags = $route->getOption('tag')
+            ?? $route->getOption('tags');
 
         /** @var string|null $summary */
         $summary = $route->getOption('summary');
