@@ -15,6 +15,7 @@ use Sunrise\Symfony\OpenApi\ResponseMetadata;
 use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Sunrise\Symfony\OpenApi\Tests\Fixture\DtoFixture;
 use Sunrise\Symfony\OpenApi\Tests\TestKit;
+use Symfony\Component\HttpKernel\Attribute\Serialize;
 use Symfony\Component\Routing\Route;
 
 final class ResponseOperationEnricherTest extends TestCase
@@ -23,6 +24,10 @@ final class ResponseOperationEnricherTest extends TestCase
 
     public function testSerializableResponse(): void
     {
+        if (!\class_exists(Serialize::class)) {
+            self::markTestSkipped('Symfony Serialize attribute is not available.');
+        }
+
         $operation = [];
         $route = self::createRouteAdapter();
         $resolver = $this->mockResponseMetadataResolver(

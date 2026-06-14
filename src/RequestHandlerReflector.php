@@ -26,12 +26,13 @@ final class RequestHandlerReflector implements RequestHandlerReflectorInterface
             $method = \str_contains($reference, '::') ? $reference : $reference . '::__invoke';
 
             try {
-                if (\PHP_VERSION_ID < 80300) {
-                    return new ReflectionMethod($method);
+                // @phpstan-ignore function.alreadyNarrowedType
+                if (\method_exists(ReflectionMethod::class, 'createFromMethodName')) {
+                    /** @var ReflectionMethod */
+                    return ReflectionMethod::createFromMethodName($method);
                 }
 
-                /** @var ReflectionMethod */
-                return ReflectionMethod::createFromMethodName($method);
+                return new ReflectionMethod($method);
             } catch (ReflectionException) {
             }
         }

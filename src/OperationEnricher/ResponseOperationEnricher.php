@@ -20,7 +20,6 @@ use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Sunrise\Symfony\OpenApi\SymfonyRouteAwareInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\Serialize;
 
 final class ResponseOperationEnricher implements
     OpenApiOperationEnricherInterface,
@@ -129,13 +128,22 @@ final class ResponseOperationEnricher implements
      */
     private static function getResponseCodeFromSerializeAttribute(ReflectionMethod $controller): ?int
     {
-        /** @var list<ReflectionAttribute<Serialize>> $attributes */
-        $attributes = $controller->getAttributes(Serialize::class);
-        if (isset($attributes[0])) {
-            $attribute = $attributes[0]->newInstance();
-            return $attribute->code;
+        /** @var class-string $attributeClass */
+        // @phpstan-ignore varTag.nativeType
+        $attributeClass = 'Symfony\Component\HttpKernel\Attribute\Serialize';
+        if (!\class_exists($attributeClass)) {
+            return null;
         }
 
-        return null;
+        /** @var list<ReflectionAttribute<object>> $attributeReflections */
+        $attributeReflections = $controller->getAttributes($attributeClass);
+        if (!isset($attributeReflections[0])) {
+            return null;
+        }
+
+        $attributeInstance = $attributeReflections[0]->newInstance();
+
+        /** @var int */
+        return $attributeInstance->code;
     }
 }
