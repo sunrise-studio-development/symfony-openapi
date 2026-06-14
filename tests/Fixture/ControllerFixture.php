@@ -14,7 +14,7 @@ use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 use Symfony\Component\HttpKernel\Attribute\Serialize;
 
-final readonly class ControllerFixture
+final class ControllerFixture
 {
     public function __invoke(): void
     {

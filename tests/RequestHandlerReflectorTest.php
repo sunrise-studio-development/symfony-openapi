@@ -14,7 +14,7 @@ final class RequestHandlerReflectorTest extends TestCase
 {
     public function testInvokableController(): void
     {
-        $reflection = new RequestHandlerReflector()->reflectRequestHandler(ControllerFixture::class);
+        $reflection = (new RequestHandlerReflector())->reflectRequestHandler(ControllerFixture::class);
 
         self::assertInstanceOf(ReflectionMethod::class, $reflection);
         self::assertSame('__invoke', $reflection->getName());
@@ -22,7 +22,7 @@ final class RequestHandlerReflectorTest extends TestCase
 
     public function testControllerMethod(): void
     {
-        $reflection = new RequestHandlerReflector()->reflectRequestHandler(
+        $reflection = (new RequestHandlerReflector())->reflectRequestHandler(
             ControllerFixture::class . '::symfonyResponse',
         );
 
@@ -35,7 +35,7 @@ final class RequestHandlerReflectorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The request handler reference "unknown" could not be reflected.');
 
-        new RequestHandlerReflector()->reflectRequestHandler('unknown');
+        (new RequestHandlerReflector())->reflectRequestHandler('unknown');
     }
 
     public function testInvalidReference(): void
@@ -43,6 +43,6 @@ final class RequestHandlerReflectorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The request handler reference "array" could not be reflected.');
 
-        new RequestHandlerReflector()->reflectRequestHandler([]);
+        (new RequestHandlerReflector())->reflectRequestHandler([]);
     }
 }

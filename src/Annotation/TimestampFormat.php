@@ -9,10 +9,10 @@ use Override;
 use Sunrise\Http\Router\OpenApi\Annotation\TimestampFormatInterface;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final readonly class TimestampFormat implements TimestampFormatInterface
+final class TimestampFormat implements TimestampFormatInterface
 {
     public function __construct(
-        public string $format,
+        public readonly string $format,
     ) {
     }
 

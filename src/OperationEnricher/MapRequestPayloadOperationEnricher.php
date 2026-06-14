@@ -22,7 +22,7 @@ final class MapRequestPayloadOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private const array DEFAULT_ACCEPT_FORMATS = ['json'];
+    private const DEFAULT_ACCEPT_FORMATS = ['json'];
 
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;
 

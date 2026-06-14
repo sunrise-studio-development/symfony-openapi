@@ -164,6 +164,6 @@ final class PathVariablesOperationEnricherTest extends TestCase
 
     public function testWeight(): void
     {
-        self::assertSame(40, new PathVariablesOperationEnricher()->getWeight());
+        self::assertSame(40, (new PathVariablesOperationEnricher())->getWeight());
     }
 }

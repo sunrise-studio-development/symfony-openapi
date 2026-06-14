@@ -7,11 +7,11 @@ namespace Sunrise\Symfony\OpenApi;
 use Override;
 use Sunrise\Http\Router\OpenApi\TypeInterface;
 
-final readonly class Type implements TypeInterface
+final class Type implements TypeInterface
 {
     public function __construct(
-        private string $name,
-        private bool $allowsNull = false,
+        private readonly string $name,
+        private readonly bool $allowsNull = false,
     ) {
     }
 

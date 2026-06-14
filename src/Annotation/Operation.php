@@ -9,11 +9,11 @@ use Override;
 use Sunrise\Http\Router\OpenApi\Annotation\OperationInterface;
 
 #[Attribute(Attribute::TARGET_CLASS | Attribute::TARGET_METHOD | Attribute::IS_REPEATABLE)]
-final readonly class Operation implements OperationInterface
+final class Operation implements OperationInterface
 {
     public function __construct(
         /** @var array<array-key, mixed> */
-        private array $operation,
+        private readonly array $operation,
     ) {
     }
 

@@ -12,7 +12,7 @@ final class SwaggerControllerTest extends TestCase
 {
     public function testInvoke(): void
     {
-        $response = new SwaggerController(new SwaggerConfiguration())();
+        $response = (new SwaggerController(new SwaggerConfiguration()))();
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('text/html; charset=UTF-8', $response->headers->get('Content-Type'));
@@ -20,7 +20,7 @@ final class SwaggerControllerTest extends TestCase
 
     public function testOpenApiUri(): void
     {
-        $response = new SwaggerController(new SwaggerConfiguration(openapiUri: '/openapi.json'))();
+        $response = (new SwaggerController(new SwaggerConfiguration(openapiUri: '/openapi.json')))();
 
         self::assertStringContainsString('/openapi.json', (string) $response->getContent());
     }

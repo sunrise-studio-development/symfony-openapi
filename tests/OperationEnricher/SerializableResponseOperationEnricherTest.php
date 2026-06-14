@@ -106,6 +106,6 @@ final class SerializableResponseOperationEnricherTest extends TestCase
 
     public function testWeight(): void
     {
-        self::assertSame(20, new SerializableResponseOperationEnricher()->getWeight());
+        self::assertSame(20, (new SerializableResponseOperationEnricher())->getWeight());
     }
 }

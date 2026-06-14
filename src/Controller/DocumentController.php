@@ -10,13 +10,13 @@ use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
-final readonly class DocumentController
+final class DocumentController
 {
-    public const string ROUTE_PATH = SunriseOpenApiController::ROUTE_PATH;
+    public const ROUTE_PATH = SunriseOpenApiController::ROUTE_PATH;
 
     public function __construct(
-        private OpenApiConfiguration $openApiConfiguration,
-        private OpenApiDocumentManagerInterface $documentManager,
+        private readonly OpenApiConfiguration $openApiConfiguration,
+        private readonly OpenApiDocumentManagerInterface $documentManager,
     ) {
     }
 

@@ -84,6 +84,6 @@ final class EmptyResponseOperationEnricherTest extends TestCase
 
     public function testWeight(): void
     {
-        self::assertSame(20, new EmptyResponseOperationEnricher()->getWeight());
+        self::assertSame(20, (new EmptyResponseOperationEnricher())->getWeight());
     }
 }

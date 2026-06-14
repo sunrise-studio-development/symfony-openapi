@@ -13,7 +13,7 @@ use Sunrise\Http\Router\OpenApi\Type;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 
-final readonly class MapUploadedFileOperationEnricher implements OpenApiOperationEnricherInterface
+final class MapUploadedFileOperationEnricher implements OpenApiOperationEnricherInterface
 {
     /**
      * @inheritDoc

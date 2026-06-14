@@ -18,7 +18,7 @@ final class EmptyResponseOperationEnricher implements
     OpenApiOperationEnricherInterface,
     OpenApiConfigurationAwareInterface
 {
-    private const int DEFAULT_RESPONSE_STATUS_CODE = 204;
+    private const DEFAULT_RESPONSE_STATUS_CODE = 204;
 
     private OpenApiConfiguration $openApiConfiguration;
 

@@ -77,6 +77,6 @@ final class MapQueryStringOperationEnricherTest extends TestCase
 
     public function testWeight(): void
     {
-        self::assertSame(20, new MapQueryStringOperationEnricher()->getWeight());
+        self::assertSame(20, (new MapQueryStringOperationEnricher())->getWeight());
     }
 }

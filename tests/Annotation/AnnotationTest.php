@@ -22,7 +22,7 @@ final class AnnotationTest extends TestCase
                     'description' => 'The operation was successful.',
                 ],
             ],
-        ], new EmptyResponse()->getOperation());
+        ], (new EmptyResponse())->getOperation());
 
         self::assertSame([
             'responses' => [
@@ -30,7 +30,7 @@ final class AnnotationTest extends TestCase
                     'description' => 'Accepted.',
                 ],
             ],
-        ], new EmptyResponse(202, 'Accepted.')->getOperation());
+        ], (new EmptyResponse(202, 'Accepted.'))->getOperation());
     }
 
     public function testItemType(): void
@@ -48,21 +48,21 @@ final class AnnotationTest extends TestCase
             'summary' => 'Summary',
         ];
 
-        self::assertSame($operation, new Operation($operation)->getOperation());
+        self::assertSame($operation, (new Operation($operation))->getOperation());
     }
 
     public function testPropertyName(): void
     {
-        self::assertSame('foo', new PropertyName('foo')->getPropertyName());
+        self::assertSame('foo', (new PropertyName('foo'))->getPropertyName());
     }
 
     public function testSchemaName(): void
     {
-        self::assertSame('Foo', new SchemaName('Foo')->getSchemaName());
+        self::assertSame('Foo', (new SchemaName('Foo'))->getSchemaName());
     }
 
     public function testTimestampFormat(): void
     {
-        self::assertSame('Y-m-d', new TimestampFormat('Y-m-d')->getTimestampFormat());
+        self::assertSame('Y-m-d', (new TimestampFormat('Y-m-d'))->getTimestampFormat());
     }
 }

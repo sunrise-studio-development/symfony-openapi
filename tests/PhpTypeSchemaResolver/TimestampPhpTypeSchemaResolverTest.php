@@ -67,9 +67,13 @@ final class TimestampPhpTypeSchemaResolverTest extends TestCase
 
     public function testWeight(): void
     {
+        $symfonyTimestampPhpTypeSchemaResolver = new TimestampPhpTypeSchemaResolver(
+            $sunriseTimestampPhpTypeSchemaResolver = new SunriseTimestampPhpTypeSchemaResolver()
+        );
+
         self::assertSame(
-            new SunriseTimestampPhpTypeSchemaResolver()->getWeight(),
-            new TimestampPhpTypeSchemaResolver(new SunriseTimestampPhpTypeSchemaResolver())->getWeight(),
+            $sunriseTimestampPhpTypeSchemaResolver->getWeight(),
+            $symfonyTimestampPhpTypeSchemaResolver->getWeight(),
         );
     }
 }

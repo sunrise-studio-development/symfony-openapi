@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Symfony\OpenApi\Tests\Fixture;
 
-final readonly class DtoFixture
+final class DtoFixture
 {
     public function __construct(
-        public string $foo = 'bar',
+        public readonly string $foo = 'bar',
     ) {
     }
 }

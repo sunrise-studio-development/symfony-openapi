@@ -16,12 +16,12 @@ use Sunrise\Http\Router\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaReso
 use Sunrise\Http\Router\OpenApi\TypeInterface;
 use Symfony\Component\HttpKernel\Attribute\MapDateTime;
 
-final readonly class TimestampPhpTypeSchemaResolver implements
+final class TimestampPhpTypeSchemaResolver implements
     OpenApiPhpTypeSchemaResolverInterface,
     OpenApiConfigurationAwareInterface
 {
     public function __construct(
-        private SunrisePhpTypeSchemaResolver $timestampPhpTypeSchemaResolver,
+        private readonly SunrisePhpTypeSchemaResolver $timestampPhpTypeSchemaResolver,
     ) {
     }
 

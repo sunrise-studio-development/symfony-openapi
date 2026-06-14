@@ -23,8 +23,8 @@ final class SerializableResponseOperationEnricher implements
     OpenApiConfigurationAwareInterface,
     OpenApiPhpTypeSchemaResolverManagerAwareInterface
 {
-    private const string DEFAULT_RESPONSE_FORMAT = 'json';
-    private const string FALLBACK_RESPONSE_MEDIA_TYPE = 'application/json';
+    private const DEFAULT_RESPONSE_FORMAT = 'json';
+    private const FALLBACK_RESPONSE_MEDIA_TYPE = 'application/json';
 
     private OpenApiConfiguration $openApiConfiguration;
     private OpenApiPhpTypeSchemaResolverManagerInterface $phpTypeSchemaResolverManager;

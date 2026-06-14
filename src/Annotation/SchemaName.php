@@ -9,10 +9,10 @@ use Override;
 use Sunrise\Http\Router\OpenApi\Annotation\SchemaNameInterface;
 
 #[Attribute(Attribute::TARGET_CLASS)]
-final readonly class SchemaName implements SchemaNameInterface
+final class SchemaName implements SchemaNameInterface
 {
     public function __construct(
-        private string $name,
+        private readonly string $name,
     ) {
     }
 

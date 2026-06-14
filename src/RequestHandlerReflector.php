@@ -12,7 +12,7 @@ use ReflectionMethod;
 use Sunrise\Http\Router\ReferenceResolver;
 use Sunrise\Http\Router\RequestHandlerReflectorInterface;
 
-final readonly class RequestHandlerReflector implements RequestHandlerReflectorInterface
+final class RequestHandlerReflector implements RequestHandlerReflectorInterface
 {
     /**
      * @inheritDoc
@@ -23,12 +23,15 @@ final readonly class RequestHandlerReflector implements RequestHandlerReflectorI
     public function reflectRequestHandler(mixed $reference): ReflectionClass|ReflectionMethod
     {
         if (\is_string($reference)) {
+            $method = \str_contains($reference, '::') ? $reference : $reference . '::__invoke';
+
             try {
-                return ReflectionMethod::createFromMethodName(
-                    \str_contains($reference, '::')
-                        ? $reference
-                        : $reference . '::__invoke'
-                );
+                if (\PHP_VERSION_ID < 80300) {
+                    return new ReflectionMethod($method);
+                }
+
+                /** @psalm-var ReflectionMethod */
+                return ReflectionMethod::createFromMethodName($method);
             } catch (ReflectionException) {
             }
         }

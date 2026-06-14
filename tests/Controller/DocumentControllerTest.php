@@ -24,7 +24,7 @@ final class DocumentControllerTest extends TestCase
         $openApiDocumentManager = $this->createMock(OpenApiDocumentManagerInterface::class);
         $openApiDocumentManager->expects(self::once())->method('openDocument')->willReturn($document);
 
-        $response = new DocumentController(self::createOpenApiConfiguration(), $openApiDocumentManager)();
+        $response = (new DocumentController(self::createOpenApiConfiguration(), $openApiDocumentManager))();
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('application/json; charset=UTF-8', $response->headers->get('Content-Type'));

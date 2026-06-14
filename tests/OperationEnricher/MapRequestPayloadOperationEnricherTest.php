@@ -109,6 +109,6 @@ final class MapRequestPayloadOperationEnricherTest extends TestCase
 
     public function testWeight(): void
     {
-        self::assertSame(10, new MapRequestPayloadOperationEnricher()->getWeight());
+        self::assertSame(10, (new MapRequestPayloadOperationEnricher())->getWeight());
     }
 }

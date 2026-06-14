@@ -18,7 +18,7 @@ final class MapUploadedFileOperationEnricherTest extends TestCase
     {
         $operation = [];
 
-        new MapUploadedFileOperationEnricher()->enrichOperation(
+        (new MapUploadedFileOperationEnricher())->enrichOperation(
             $this->mockRoute(),
             self::createControllerReflection('uploadedFile'),
             $operation,
@@ -54,7 +54,7 @@ final class MapUploadedFileOperationEnricherTest extends TestCase
     {
         $operation = [];
 
-        new MapUploadedFileOperationEnricher()->enrichOperation(
+        (new MapUploadedFileOperationEnricher())->enrichOperation(
             $this->mockRoute(),
             new ReflectionClass(new stdClass()),
             $operation,
@@ -67,7 +67,7 @@ final class MapUploadedFileOperationEnricherTest extends TestCase
     {
         $operation = [];
 
-        new MapUploadedFileOperationEnricher()->enrichOperation(
+        (new MapUploadedFileOperationEnricher())->enrichOperation(
             $this->mockRoute(),
             self::createControllerReflection('uploadedFileWithUnmappedParameter'),
             $operation,
@@ -81,6 +81,6 @@ final class MapUploadedFileOperationEnricherTest extends TestCase
 
     public function testWeight(): void
     {
-        self::assertSame(10, new MapUploadedFileOperationEnricher()->getWeight());
+        self::assertSame(10, (new MapUploadedFileOperationEnricher())->getWeight());
     }
 }

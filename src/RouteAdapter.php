@@ -8,12 +8,12 @@ use Override;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\Routing\Route;
 
-final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareInterface
+final class RouteAdapter implements RouteInterface, SymfonyRouteAwareInterface
 {
     public function __construct(
-        private string $name,
-        private Route $route,
-        private RouteMetadata $metadata,
+        private readonly string $name,
+        private readonly Route $route,
+        private readonly RouteMetadata $metadata,
     ) {
     }
 
@@ -73,9 +73,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     #[Override]
     public function getAttribute(string $name, mixed $default = null): mixed
     {
-        return $this->route->hasDefault($name)
-            ? $this->route->getDefault($name)
-            : $default;
+        return $this->route->hasDefault($name) ? $this->route->getDefault($name) : $default;
     }
 
     /**
@@ -84,9 +82,7 @@ final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareIn
     #[Override]
     public function withAddedAttributes(array $attributes): static
     {
-        $route = (clone $this->route)->addDefaults($attributes);
-
-        return new self($this->name, $route, $this->metadata);
+        return new self($this->name, (clone $this->route)->addDefaults($attributes), $this->metadata);
     }
 
     /**

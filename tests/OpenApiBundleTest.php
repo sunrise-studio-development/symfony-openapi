@@ -27,7 +27,7 @@ final class OpenApiBundleTest extends TestCase
             __DIR__ . '/../config/services.php',
         );
 
-        new OpenApiBundle()->loadExtension([], $configurator, $container);
+        (new OpenApiBundle())->loadExtension([], $configurator, $container);
 
         self::assertTrue($container->hasDefinition(OpenApiConfiguration::class));
         self::assertSame('/openapi', $container->getParameter('openapi.document_uri'));
