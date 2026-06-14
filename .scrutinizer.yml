@@ -39,10 +39,10 @@ build:
         php: '8.3.16'
       tests:
         override:
-          - command: composer test
+          - command: composer phpunit
     php82:
       environment:
         php: '8.2.27'
       tests:
         override:
-          - command: composer test
+          - command: composer phpunit

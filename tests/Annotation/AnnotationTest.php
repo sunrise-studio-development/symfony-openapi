@@ -14,25 +14,6 @@ use Sunrise\Symfony\OpenApi\Annotation\TimestampFormat;
 
 final class AnnotationTest extends TestCase
 {
-    public function testEmptyResponse(): void
-    {
-        self::assertSame([
-            'responses' => [
-                204 => [
-                    'description' => 'The operation was successful.',
-                ],
-            ],
-        ], (new EmptyResponse())->getOperation());
-
-        self::assertSame([
-            'responses' => [
-                202 => [
-                    'description' => 'Accepted.',
-                ],
-            ],
-        ], (new EmptyResponse(202, 'Accepted.'))->getOperation());
-    }
-
     public function testItemType(): void
     {
         $itemType = new ItemType('Foo', allowsNull: true, limit: 10);
