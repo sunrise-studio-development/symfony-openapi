@@ -8,7 +8,7 @@ use Override;
 use Sunrise\Http\Router\OpenApi\OpenApiPathBuilderInterface;
 use Sunrise\Http\Router\RouteInterface;
 
-final class OpenApiPathBuilder implements OpenApiPathBuilderInterface
+final readonly class OpenApiPathBuilder implements OpenApiPathBuilderInterface
 {
     /**
      * @see \Symfony\Component\Routing\Route::setPath

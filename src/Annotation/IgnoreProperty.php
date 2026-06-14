@@ -8,6 +8,6 @@ use Attribute;
 use Sunrise\Http\Router\OpenApi\Annotation\IgnorePropertyInterface;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class IgnoreProperty implements IgnorePropertyInterface
+final readonly class IgnoreProperty implements IgnorePropertyInterface
 {
 }

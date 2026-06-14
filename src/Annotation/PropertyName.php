@@ -9,10 +9,10 @@ use Override;
 use Sunrise\Http\Router\OpenApi\Annotation\PropertyNameInterface;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class PropertyName implements PropertyNameInterface
+final readonly class PropertyName implements PropertyNameInterface
 {
     public function __construct(
-        private readonly string $name,
+        private string $name,
     ) {
     }
 

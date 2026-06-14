@@ -8,12 +8,12 @@ use Override;
 use Sunrise\Http\Router\RouteInterface;
 use Symfony\Component\Routing\Route;
 
-final class RouteAdapter implements RouteInterface, SymfonyRouteAwareInterface
+final readonly class RouteAdapter implements RouteInterface, SymfonyRouteAwareInterface
 {
     public function __construct(
-        private readonly string $name,
-        private readonly Route $route,
-        private readonly RouteMetadata $metadata,
+        private string $name,
+        private Route $route,
+        private RouteMetadata $metadata,
     ) {
     }
 

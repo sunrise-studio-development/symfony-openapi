@@ -46,9 +46,3 @@ build:
       tests:
         override:
           - command: composer test
-    php81:
-      environment:
-        php: '8.1.31'
-      tests:
-        override:
-          - command: composer test

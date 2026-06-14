@@ -7,7 +7,7 @@ namespace Sunrise\Symfony\OpenApi;
 use Override;
 use Symfony\Component\Routing\Route;
 
-final class RouteMetadataResolver implements RouteMetadataResolverInterface
+final readonly class RouteMetadataResolver implements RouteMetadataResolverInterface
 {
     #[Override]
     public function resolveRouteMetadata(Route $route): RouteMetadata

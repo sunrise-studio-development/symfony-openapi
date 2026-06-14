@@ -8,7 +8,6 @@ use Override;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionNamedType;
 use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerAwareInterface;
 use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverManagerInterface;
@@ -55,11 +54,9 @@ final class MapRequestPayloadOperationEnricher implements
 
             $mapRequestPayload = $annotations[0]->newInstance();
 
-            if (
-                $mapRequestPayload->type !== null &&
-                $requestHandlerParameter->getType() instanceof ReflectionNamedType &&
-                $requestHandlerParameter->getType()->getName() === Type::PHP_TYPE_NAME_ARRAY
-            ) {
+            $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
+
+            if ($mapRequestPayload->type !== null && $requestBodyType->getName() === Type::PHP_TYPE_NAME_ARRAY) {
                 $requestBodySchema = [
                     'type' => Type::OAS_TYPE_NAME_ARRAY,
                     'items' => $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
@@ -69,13 +66,12 @@ final class MapRequestPayloadOperationEnricher implements
                 ];
             } else {
                 $requestBodySchema = $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
-                    TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType()),
+                    $requestBodyType,
                     $requestHandlerParameter,
                 );
             }
 
             $acceptFormats = (array) $mapRequestPayload->acceptFormat ?: self::DEFAULT_ACCEPT_FORMATS;
-
             foreach (self::getMimeTypesForFormats($acceptFormats) as $mimeType) {
                 $operation['requestBody']['content'][$mimeType] = [
                     'schema' => $requestBodySchema,
