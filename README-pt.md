@@ -88,7 +88,6 @@ Parâmetros úteis:
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file usado por `openapi:build-document`. |
 | `openapi.document_uri` | `/openapi` | Public URI do documento gerado. Swagger UI usa esse URI para carregar o documento. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Formato PHP `date()` usado para gerar valores OpenAPI `example` para schemas de data/hora. |
-| `openapi.default_empty_response_status_code` | `204` | Status code gerado para métodos de controller com return type explícito `void`. |
 
 `SwaggerConfiguration` pode ser substituído como serviço se você precisar de Swagger UI assets ou template variables.
 
@@ -132,7 +131,7 @@ Execute:
 php bin/console openapi:build-document
 ```
 
-O comando lê a coleção de rotas, resolve route metadata, mantém API routes, constrói o OpenAPI document e escreve em `openapi.document_filename`.
+O comando lê a coleção de rotas, mantém as routes que devem ser documentadas, constrói o OpenAPI document e escreve em `openapi.document_filename`.
 
 Depois da geração:
 
@@ -170,10 +169,13 @@ Options suportadas:
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Marca uma operation como deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | Inclui ou exclui a route do generated document. |
+| `response_code` | `int` | Response status code. Usado para `void` responses e serialized responses sem `#[Serialize]`. |
+| `response_format` | `string` | Response format convertido para media type, por exemplo `json` para `application/json`. |
+| `response_formats` | `string[]` | Response formats. Ignorado quando `response_format` está definido. |
 
 Se nenhuma API option for definida, routes cujo path começa com `/api/` são tratadas como API routes.
 
-Se route options não forem o lugar correto para metadata no seu projeto, substitua `RouteMetadataResolverInterface`.
+Se o seu projeto não quer manter tags, summaries, descriptions e API filtering em route options, substitua `RouteMetadataResolverInterface`.
 
 ## Symfony Attributes
 
@@ -251,7 +253,7 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 Comportamento:
 
 - O PHP parameter type vira o request schema.
-- `acceptFormat` é opcional. Se omitido, os default accept formats são usados; por padrão, é `json`.
+- `acceptFormat` é opcional. Se omitido, o route default `_format` é usado; se `_format` também estiver ausente, `json` é usado.
 - `acceptFormat` é convertido de Symfony request format para media type, por exemplo `json` para `application/json`.
 - Se o PHP parameter é required, o OpenAPI request body também é required.
 - Para array payloads, `MapRequestPayload(type: SomeDto::class)` descreve o item type.
@@ -289,29 +291,40 @@ O argumento `format` é opcional. Se omitido, o default timestamp format é usad
 
 ## Geração De Respostas
 
-O pacote documenta responses apenas quando o controlador descreve explicitamente como o resultado é retornado.
+Escreva os controller return types como a API pública deve parecer.
 
-| Metadata do controlador | Generated response |
+| Return type do controller | Generated response |
 | --- | --- |
-| `#[Serialize]` | Serialized response body. O status é lido de `Serialize::code`; a schema é lida do return type do método. |
-| Return type explícito `void` | Empty response. Status padrão `204`, configurável com `openapi.default_empty_response_status_code`. |
-| `#[EmptyResponse]` | Override manual de empty response para custom status ou description. |
-| Symfony `Response` subclass sem OpenAPI attributes | Automatic response content não é gerado. Use `#[Operation]` ou `#[EmptyResponse]` quando a response precisa ser documentada. |
+| View object, DTO, scalar, array | JSON response body. A schema é lida do return type do método. Status padrão `200`. |
+| `void` explícito | Empty response. Status padrão `204`. |
+| Symfony `Response` subclass | Response body não é gerado automaticamente. Use `#[Operation]` se a response precisa ser documentada manualmente. |
 
-Serialized responses usam o route default `_format` como Symfony response format. Se `_format` não for definido, `json` é usado. O format é convertido para media type com `Request::getMimeTypes()`.
+Para APIs JSON, nenhuma response format option é necessária. Use route options apenas quando os defaults não servirem:
+
+- `response_code` altera o documented status, por exemplo `201` para create actions.
+- `response_format` documenta um Symfony response format não padrão.
+- `response_formats` documenta vários response formats.
 
 ```php
-use Symfony\Component\HttpKernel\Attribute\Serialize;
-
-#[Route('/api/pets/{id}', format: 'json')]
-#[Serialize(code: 200)]
+#[Route('/api/pets/{id}', methods: ['GET'])]
 public function show(int $id): PetView
 {
     // ...
 }
 ```
 
-Se uma route retorna um custom view object, `#[Serialize]` torna o return type a response schema.
+Symfony 8.1 introduziu [`#[Serialize]`](https://symfony.com/blog/new-in-symfony-8-1-serialize-attribute), que serializa controller results em runtime. O pacote lê `Serialize::code` quando ele existe; a schema continua vindo do PHP return type.
+
+```php
+use Symfony\Component\HttpKernel\Attribute\Serialize;
+
+#[Route('/api/pets', methods: ['POST'], options: ['response_code' => 201])]
+#[Serialize(code: 201)]
+public function create(CreatePetRequest $request): PetView
+{
+    // ...
+}
+```
 
 Use um return type explícito `void` para actions sem response body:
 
@@ -323,23 +336,46 @@ public function delete(int $id): void
 }
 ```
 
-Isso apenas documenta a API. O Symfony não converte um resultado `null` do controller em `204` por conta própria. Na aplicação, prefira um pequeno listener para `KernelEvents::VIEW` que converta um resultado `null` em `new Response(status: 204)`. Esse comportamento runtime está fora deste pacote e faria sentido no Symfony junto de `SerializeControllerResultAttributeListener`.
+Isso apenas documenta a API. O Symfony não converte um resultado `null` do controller em `204` por conta própria. Se a aplicação usa `void` actions, adicione um pequeno listener para `KernelEvents::VIEW`.
 
-Como alternativa menos orientada ao domínio, retorne `new Response(status: 204)` manualmente e use `#[EmptyResponse]` quando precisar documentar uma custom empty response:
+Se ainda não puder usar Symfony 8.1, o mesmo listener também pode serializar non-null controller results como JSON. A implementação do Symfony é [`SerializeControllerResultAttributeListener`](https://github.com/symfony/http-kernel/blob/ad1426284c2e7fe10de65dc68a25a724639e3838/EventListener/SerializeControllerResultAttributeListener.php); uma versão mínima JSON-only pode ser assim:
 
 ```php
-use Symfony\Component\HttpFoundation\Response;
-use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+namespace App\EventListener;
 
-#[Route('/api/jobs/{id}', methods: ['POST'])]
-#[EmptyResponse(202, 'The job was accepted.')]
-public function accept(int $id): Response
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Serializer\SerializerInterface;
+
+#[AsEventListener(event: KernelEvents::VIEW)]
+final readonly class JsonControllerResultListener
 {
-    return new Response(status: 202);
+    public function __construct(
+        private SerializerInterface $serializer,
+    ) {
+    }
+
+    public function __invoke(ViewEvent $event): void
+    {
+        $result = $event->getControllerResult();
+        if ($result === null) {
+            $event->setResponse(new Response(status: 204));
+            return;
+        }
+
+        $event->setResponse(new JsonResponse(
+            $this->serializer->serialize($result, 'json'),
+            200,
+            json: true,
+        ));
+    }
 }
 ```
 
-Para wrappers como `{data: ..., meta: ...}`, adicione um custom operation enricher ou descreva a response com `#[Operation]`.
+Se o seu projeto não quer ler response status e format de `#[Serialize]` e route options, substitua `ResponseMetadataResolverInterface`.
 
 ## OpenAPI Attributes
 
@@ -348,7 +384,6 @@ O pacote fornece OpenAPI attributes para tarefas comuns de schema:
 | Attribute | Target | Propósito |
 | --- | --- | --- |
 | `#[Operation]` | class, method | Adiciona um manual OpenAPI operation fragment. |
-| `#[EmptyResponse]` | class, method | Adiciona uma empty OpenAPI response, `204` por padrão. |
 | `#[ItemType]` | property, parameter | Descreve array item type. |
 | `#[SchemaName]` | class | Sobrescreve component schema name. |
 | `#[PropertyName]` | property | Sobrescreve OpenAPI property name. |
@@ -445,9 +480,9 @@ Resolvers registrados:
 
 Se o seu projeto tem um PHP type custom que precisa de um custom schema, implemente `OpenApiPhpTypeSchemaResolverInterface` e registre o resolver no serviço `OpenApiPhpTypeSchemaResolverManagerInterface`.
 
-## Object Schema Resolver
+## Object Schemas
 
-`ObjectPhpTypeSchemaResolver` é o resolver principal para DTOs e view objects.
+DTOs e view objects são descritos a partir de typed PHP properties. Internamente, isso é feito por `ObjectPhpTypeSchemaResolver`.
 
 Ele lê PHP classes diretamente:
 
@@ -478,6 +513,7 @@ O pacote é formado por serviços substituíveis:
 | Service/interface | Propósito |
 | --- | --- |
 | `RouteMetadataResolverInterface` | Controla tags, summary, description, deprecation e API filtering. |
+| `ResponseMetadataResolverInterface` | Controla response status codes e response formats. |
 | `OpenApiOperationEnricherInterface` | Adiciona request parameters, request bodies, responses ou custom operation data. |
 | `OpenApiPhpTypeSchemaResolverInterface` | Converte PHP types para OpenAPI schemas. |
 | `OpenApiPathBuilderInterface` | Converte Symfony route paths para OpenAPI paths. |

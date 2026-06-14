@@ -88,7 +88,6 @@ parameters:
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | `openapi:build-document` 使用的 output file. |
 | `openapi.document_uri` | `/openapi` | 生成文档的 public URI。Swagger UI 使用它加载文档。 |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | 用于为 date/time schemas 生成 OpenAPI `example` 的 PHP `date()` 格式. |
-| `openapi.default_empty_response_status_code` | `204` | 为显式 `void` return type 的 controller methods 生成的 status code. |
 
 如果需要自定义 Swagger UI assets 或 template variables，可以把 `SwaggerConfiguration` 替换为自己的 service。
 
@@ -132,7 +131,7 @@ parameters:
 php bin/console openapi:build-document
 ```
 
-该命令读取 route collection，解析 route metadata，保留 API routes，构建 OpenAPI document，并写入 `openapi.document_filename`。
+该命令读取 route collection，保留应该被文档化的 routes，构建 OpenAPI document，并写入 `openapi.document_filename`。
 
 生成后:
 
@@ -170,10 +169,13 @@ final readonly class PetController
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | 将 operation 标记为 deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | 将 route 包含到 generated document 中或从中排除. |
+| `response_code` | `int` | Response status code。用于 `void` responses 和没有 `#[Serialize]` 的 serialized responses. |
+| `response_format` | `string` | 转换为 media type 的 response format，例如 `json` 转为 `application/json`. |
+| `response_formats` | `string[]` | Response formats。设置了 `response_format` 时忽略. |
 
 如果没有设置 API option，path 以 `/api/` 开头的 routes 会被视为 API routes。
 
-如果 route options 不适合作为项目中的 metadata 来源，可以替换 `RouteMetadataResolverInterface`。
+如果项目不想把 tags、summary、description 等信息放在 route options 中，可以替换 `RouteMetadataResolverInterface`。
 
 ## Symfony Attributes
 
@@ -251,7 +253,7 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 行为:
 
 - PHP parameter type 会成为 request schema.
-- `acceptFormat` 是可选的。如果省略，将使用 default accept formats；默认是 `json`.
+- `acceptFormat` 是可选的。如果省略，将使用 route default `_format`；如果 `_format` 也不存在，则使用 `json`.
 - `acceptFormat` 从 Symfony request format 转换为 media type，例如 `json` 转为 `application/json`.
 - 如果 PHP parameter 是 required，OpenAPI request body 也是 required.
 - 对于 array payloads，`MapRequestPayload(type: SomeDto::class)` 描述 item type.
@@ -287,31 +289,42 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 
 `format` 参数是可选的。如果省略，将使用 default timestamp format。
 
-## 响应生成
+## 响应
 
-该包只在控制器明确描述返回方式时生成 response 文档:
+按公开 API 应该呈现的样子编写 controller return types。
 
-| Controller metadata | Generated response |
+| Controller return type | Generated response |
 | --- | --- |
-| `#[Serialize]` | Serialized response body。Status 来自 `Serialize::code`; schema 来自方法 return type. |
-| 显式 `void` return type | Empty response。默认 status 是 `204`，可通过 `openapi.default_empty_response_status_code` 配置. |
-| `#[EmptyResponse]` | 为 custom status 或 description 手动 override empty response. |
-| 没有 OpenAPI attributes 的 Symfony `Response` subclass | 不生成 automatic response content。如果需要描述 response，使用 `#[Operation]` 或 `#[EmptyResponse]`. |
+| View object, DTO, scalar, array | JSON response body。Schema 从方法 return type 读取。默认 status `200`. |
+| 显式 `void` | Empty response。默认 status `204`. |
+| Symfony `Response` subclass | Response body 不会自动生成。需要手写 response 文档时使用 `#[Operation]`. |
 
-Serialized responses 使用 route default `_format` 作为 Symfony response format。如果没有设置 `_format`，使用 `json`。Format 通过 `Request::getMimeTypes()` 转为 media type.
+对于 JSON API，通常不需要 response format option。只有 defaults 不合适时才使用 route options:
+
+- `response_code` 修改 documented status，例如 create actions 使用 `201`.
+- `response_format` 文档化非默认 Symfony response format.
+- `response_formats` 文档化多个 response formats.
 
 ```php
-use Symfony\Component\HttpKernel\Attribute\Serialize;
-
-#[Route('/api/pets/{id}', format: 'json')]
-#[Serialize(code: 200)]
+#[Route('/api/pets/{id}', methods: ['GET'])]
 public function show(int $id): PetView
 {
     // ...
 }
 ```
 
-如果 route 返回 custom view object，`#[Serialize]` 会把 return type 作为 response schema。
+Symfony 8.1 引入了 [`#[Serialize]`](https://symfony.com/blog/new-in-symfony-8-1-serialize-attribute)，用于在 runtime 序列化 controller results。本包会读取 `Serialize::code`；schema 仍然来自 PHP return type。
+
+```php
+use Symfony\Component\HttpKernel\Attribute\Serialize;
+
+#[Route('/api/pets', methods: ['POST'], options: ['response_code' => 201])]
+#[Serialize(code: 201)]
+public function create(CreatePetRequest $request): PetView
+{
+    // ...
+}
+```
 
 没有 response body 的 actions 使用显式 `void` return type:
 
@@ -323,23 +336,46 @@ public function delete(int $id): void
 }
 ```
 
-这只负责文档生成。Symfony 自身不会把 controller 的 `null` result 转成 `204`。在应用中，建议添加一个很小的 `KernelEvents::VIEW` listener，把 `null` result 转成 `new Response(status: 204)`。这个 runtime 行为不属于本包职责，它更适合由 Symfony 像 `SerializeControllerResultAttributeListener` 那样提供。
+这只负责文档生成。Symfony 自身不会把 controller 的 `null` result 转成 `204`。如果应用使用 `void` actions，请添加一个小的 `KernelEvents::VIEW` listener。
 
-作为不那么 domain-oriented 的替代方案，可以手动返回 `new Response(status: 204)`，并在需要描述 custom empty response 时使用 `#[EmptyResponse]`:
+如果还不能使用 Symfony 8.1，同一个 listener 也可以把 non-null controller results 序列化为 JSON。Symfony 自身实现是 [`SerializeControllerResultAttributeListener`](https://github.com/symfony/http-kernel/blob/ad1426284c2e7fe10de65dc68a25a724639e3838/EventListener/SerializeControllerResultAttributeListener.php)；一个 JSON-only 的最小版本可以这样写:
 
 ```php
-use Symfony\Component\HttpFoundation\Response;
-use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+namespace App\EventListener;
 
-#[Route('/api/jobs/{id}', methods: ['POST'])]
-#[EmptyResponse(202, 'The job was accepted.')]
-public function accept(int $id): Response
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
+use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Serializer\SerializerInterface;
+
+#[AsEventListener(event: KernelEvents::VIEW)]
+final readonly class JsonControllerResultListener
 {
-    return new Response(status: 202);
+    public function __construct(
+        private SerializerInterface $serializer,
+    ) {
+    }
+
+    public function __invoke(ViewEvent $event): void
+    {
+        $result = $event->getControllerResult();
+        if ($result === null) {
+            $event->setResponse(new Response(status: 204));
+            return;
+        }
+
+        $event->setResponse(new JsonResponse(
+            $this->serializer->serialize($result, 'json'),
+            200,
+            json: true,
+        ));
+    }
 }
 ```
 
-对于 `{data: ..., meta: ...}` 这样的 wrappers，可以添加 custom operation enricher，或用 `#[Operation]` 描述 response。
+如果项目不想从 `#[Serialize]` 和 route options 中读取 response status/format，可以替换 `ResponseMetadataResolverInterface`。
 
 ## OpenAPI Attributes
 
@@ -348,7 +384,6 @@ public function accept(int $id): Response
 | Attribute | Target | 用途 |
 | --- | --- | --- |
 | `#[Operation]` | class, method | 添加 manual OpenAPI operation fragment. |
-| `#[EmptyResponse]` | class, method | 添加 empty OpenAPI response，默认 `204`. |
 | `#[ItemType]` | property, parameter | 描述 array item type. |
 | `#[SchemaName]` | class | 覆盖 component schema name. |
 | `#[PropertyName]` | property | 覆盖 OpenAPI property name. |
@@ -478,6 +513,7 @@ Symfony Serializer 参考: [Serializer](https://symfony.com/doc/current/serializ
 | Service/interface | 用途 |
 | --- | --- |
 | `RouteMetadataResolverInterface` | 控制 tags、summary、description、deprecation 和 API filtering. |
+| `ResponseMetadataResolverInterface` | 控制 response status codes 和 response formats. |
 | `OpenApiOperationEnricherInterface` | 添加 request parameters、request bodies、responses 或 custom operation data. |
 | `OpenApiPhpTypeSchemaResolverInterface` | 将 PHP types 转换为 OpenAPI schemas. |
 | `OpenApiPathBuilderInterface` | 将 Symfony route paths 转换为 OpenAPI paths. |
