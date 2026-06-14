@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi\Controller;
 
 use RuntimeException;
-use Sunrise\Http\Router\OpenApi\Controller\OpenApiController as SunriseOpenApiController;
 use Sunrise\Http\Router\OpenApi\OpenApiConfiguration;
 use Sunrise\Http\Router\OpenApi\OpenApiDocumentManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 final readonly class DocumentController
 {
-    public const ROUTE_PATH = SunriseOpenApiController::ROUTE_PATH;
+    public const ROUTE_PATH = '/docs/openapi.json';
 
     public function __construct(
         private OpenApiConfiguration $openApiConfiguration,

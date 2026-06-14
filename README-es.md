@@ -11,7 +11,7 @@ Este paquete genera un documento OpenAPI a partir de rutas Symfony, firmas de co
 
 El objetivo es mantener la documentación de la API cerca del código de la aplicación. Los endpoints normales no deberían necesitar grandes bloques `#[OA\...]`. Las rutas describen paths y methods, los atributos Symfony describen request mapping, los DTO describen datos de entrada, los view objects describen datos de salida y las route options describen operation metadata. Los fragmentos OpenAPI manuales quedan disponibles para casos excepcionales.
 
-La API vive en el namespace `Sunrise\Symfony\OpenApi`. Internamente, el paquete usa el OpenAPI engine de [Sunrise HTTP Router](https://github.com/sunrise-php/http-router).
+La API pública vive en el namespace `Sunrise\Symfony\OpenApi`.
 
 ## Instalación
 
@@ -19,7 +19,7 @@ La API vive en el namespace `Sunrise\Symfony\OpenApi`. Internamente, el paquete 
 composer require sunrise-studio/symfony-openapi
 ```
 
-El paquete requiere Symfony HttpKernel 8.1 o más nuevo.
+El paquete requiere PHP 8.2 o más nuevo. Las versiones soportadas de los componentes Symfony están definidas en `composer.json`. Symfony 8.1 o más nuevo solo es necesario si tu aplicación quiere usar el atributo runtime nativo `#[Serialize]`.
 
 Registra el bundle:
 
@@ -39,14 +39,14 @@ openapi:
   resource: '@OpenApiBundle/config/routes.php'
 ```
 
-Esto importa dos rutas:
+Esto importa dos rutas de documentación:
 
 | Route | Controller | Propósito |
 | --- | --- | --- |
-| `GET /openapi` | `DocumentController` | Sirve el documento OpenAPI JSON generado. |
-| `GET /swagger.html` | `SwaggerController` | Sirve Swagger UI configurado para leer `/openapi`. |
+| `GET /docs` | `SwaggerController` | Sirve Swagger UI configurado para leer `/docs/openapi.json`. |
+| `GET /docs/openapi.json` | `DocumentController` | Sirve el documento OpenAPI JSON generado. |
 
-Estas rutas no se incluyen en el API document generado: no tienen `api: true` y sus paths no empiezan con `/api/`.
+Estas rutas no se incluyen en el API document generado porque no tienen `api: true` y sus paths no empiezan con `/api/`.
 
 Si solo necesitas una ruta, importa su archivo directamente:
 
@@ -86,7 +86,7 @@ Parámetros útiles:
 | `openapi.initial_document` | OpenAPI version + `API` title | Documento base que se fusiona con los generated paths y schemas. |
 | `openapi.initial_operation` | `responses: []` | Operation base que se fusiona con cada generated operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | Output file usado por `openapi:build-document`. |
-| `openapi.document_uri` | `/openapi` | Public URI del documento generado. Swagger UI lo usa para cargar el documento. |
+| `openapi.document_uri` | `/docs/openapi.json` | Public URI del documento generado. Swagger UI lo usa para cargar el documento. |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | Formato PHP `date()` usado para generar valores OpenAPI `example` para schemas de fecha/hora. |
 
 `SwaggerConfiguration` puede reemplazarse como servicio si necesitas Swagger UI assets o template variables.
@@ -98,7 +98,7 @@ Si solo Swagger UI necesita otro path, define la ruta tú mismo:
 ```yaml
 # config/routes.yaml
 swagger_ui:
-  path: /docs
+  path: /swagger.html
   controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
   methods: [GET]
   options:
@@ -110,7 +110,7 @@ Si también cambia la route del OpenAPI document, actualiza la ruta y `openapi.d
 ```yaml
 # config/routes.yaml
 openapi_document:
-  path: /docs/openapi.json
+  path: /openapi.json
   controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
   methods: [GET]
   options:
@@ -120,7 +120,7 @@ openapi_document:
 ```yaml
 # config/packages/openapi.yaml
 parameters:
-  openapi.document_uri: /docs/openapi.json
+  openapi.document_uri: /openapi.json
 ```
 
 ## Construir El Documento
@@ -133,14 +133,14 @@ php bin/console openapi:build-document
 
 El comando lee la colección de rutas, conserva las routes que deben documentarse, construye el OpenAPI document y lo escribe en `openapi.document_filename`.
 
-Después de generar:
+Después de generar, con las rutas por defecto del paquete importadas:
 
-- `/openapi` devuelve el JSON document generado.
-- `/swagger.html` abre Swagger UI.
+- `/docs` abre Swagger UI.
+- `/docs/openapi.json` devuelve el JSON document generado.
 
 ## Route Options
 
-Route options son la fuente por defecto para route-level OpenAPI metadata:
+Route options son el lugar por defecto para operation metadata:
 
 ```php
 use Symfony\Component\Routing\Attribute\Route;
@@ -164,14 +164,14 @@ Options soportadas:
 
 | Option | Type | Propósito |
 | --- | --- | --- |
-| `tags` | `string\|string[]` | OpenAPI operation tags. |
+| `tag`, `tags` | `string\|string[]` | OpenAPI operation tags. |
 | `summary` | `string` | OpenAPI operation summary. |
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | Marca una operation como deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | Incluye o excluye la route del generated document. |
-| `response_code` | `int` | Response status code. Se usa para `void` responses y serialized responses sin `#[Serialize]`. |
-| `response_format` | `string` | Response format convertido a media type, por ejemplo `json` a `application/json`. |
-| `response_formats` | `string[]` | Response formats. Se ignora cuando `response_format` está definido. |
+| `response_code` | `int` | Documented response status cuando `#[Serialize]` no proporciona uno. Defaults: `200` para response body y `204` para `void` explícito. |
+| `response_format` | `string` | Response format para el documented response body, convertido a media type, por ejemplo `json` a `application/json`. |
+| `response_formats` | `string[]` | Varios response formats. Se ignora cuando `response_format` está definido. |
 
 Si no se define ninguna API option, las routes cuyo path empieza con `/api/` se tratan como API routes.
 
@@ -179,7 +179,7 @@ Si tu proyecto no quiere guardar tags, summaries, descriptions y API filtering e
 
 ## Symfony Attributes
 
-El paquete soporta Symfony controller value resolver attributes. Consulta la [documentación de Symfony](https://symfony.com/doc/current/controller/value_resolver.html).
+El paquete entiende los Symfony controller attributes que describen request data. Consulta la [documentación de Symfony](https://symfony.com/doc/current/controller/value_resolver.html).
 
 ### Path Variables
 
@@ -235,7 +235,7 @@ public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
 }
 ```
 
-Si `key` es `null`, el objeto se describe como todo el query string con `style: form`. Si `key` está definido, el parámetro usa `style: deepObject`.
+Sin `key`, el nombre del parámetro es el nombre del parámetro PHP y el objeto usa `style: form`. Con `key`, ese valor se usa como nombre del parámetro y el objeto usa `style: deepObject`.
 
 ### Request Body
 
@@ -250,7 +250,7 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 }
 ```
 
-Comportamiento:
+Request body generado:
 
 - El PHP parameter type se convierte en request schema.
 - `acceptFormat` es opcional. Si se omite, se usa el route default `_format`; si `_format` tampoco existe, se usa `json`.
@@ -299,10 +299,10 @@ Escribe los controller return types como debe verse la API pública.
 | `void` explícito | Empty response. Status por defecto `204`. |
 | Symfony `Response` subclass | Response body no se genera automáticamente. Usa `#[Operation]` si la response debe documentarse manualmente. |
 
-Para APIs JSON, no necesitas response format option. Usa route options solo cuando los defaults no sirven:
+Para APIs JSON, no necesitas response format option. Usa route options solo cuando los defaults no encajan con el endpoint:
 
 - `response_code` cambia el documented status, por ejemplo `201` para create actions.
-- `response_format` documenta un Symfony response format no estándar.
+- `response_format` documenta un response format no estándar.
 - `response_formats` documenta varios response formats.
 
 ```php
@@ -313,7 +313,7 @@ public function show(int $id): PetView
 }
 ```
 
-Symfony 8.1 introdujo [`#[Serialize]`](https://symfony.com/blog/new-in-symfony-8-1-serialize-attribute), que serializa controller results en runtime. El paquete lee `Serialize::code` cuando existe; la schema sigue saliendo del PHP return type.
+Symfony 8.1 introdujo [`#[Serialize]`](https://symfony.com/blog/new-in-symfony-8-1-serialize-attribute), que serializa controller results en runtime. Cuando ese atributo está presente, el paquete lee `Serialize::code`; la schema sigue saliendo del PHP return type.
 
 ```php
 use Symfony\Component\HttpKernel\Attribute\Serialize;
@@ -336,9 +336,9 @@ public function delete(int $id): void
 }
 ```
 
-Esto solo documenta la API. Symfony no convierte por sí mismo un resultado `null` del controlador en `204`. Si tu aplicación usa `void` actions, añade un pequeño listener para `KernelEvents::VIEW`.
+Esto documenta el endpoint como una response vacía `204`. Symfony no convierte por sí mismo un resultado `null` del controlador en `204`, así que las aplicaciones que usan actions `void` deben resolverlo en runtime.
 
-Si todavía no puedes usar Symfony 8.1, el mismo listener también puede serializar non-null controller results como JSON. La implementación de Symfony es [`SerializeControllerResultAttributeListener`](https://github.com/symfony/http-kernel/blob/ad1426284c2e7fe10de65dc68a25a724639e3838/EventListener/SerializeControllerResultAttributeListener.php); una versión mínima JSON-only puede ser así:
+Si la aplicación todavía no puede usar Symfony 8.1, un pequeño listener para `KernelEvents::VIEW` puede cubrir ambos casos: `null` se convierte en `204`, y otros controller results se serializan como JSON. La implementación de Symfony es [`SerializeControllerResultAttributeListener`](https://github.com/symfony/http-kernel/blob/ad1426284c2e7fe10de65dc68a25a724639e3838/EventListener/SerializeControllerResultAttributeListener.php); una versión mínima JSON-only puede ser así:
 
 ```php
 namespace App\EventListener;
@@ -375,11 +375,11 @@ final readonly class JsonControllerResultListener
 }
 ```
 
-Si tu proyecto no quiere leer response status y format desde `#[Serialize]` y route options, reemplaza `ResponseMetadataResolverInterface`.
+Si tu proyecto tiene reglas distintas para response status o formats, reemplaza `ResponseMetadataResolverInterface`.
 
 ## OpenAPI Attributes
 
-El paquete proporciona OpenAPI attributes para tareas comunes de schema:
+El paquete proporciona pequeños OpenAPI attributes para casos donde los PHP types no son suficientes:
 
 | Attribute | Target | Propósito |
 | --- | --- | --- |
@@ -465,7 +465,7 @@ En arrays YAML/PHP, el valor de schema puede ser un PHP type string. Se trata co
 
 ## PHP Type Schema Resolvers
 
-Resolvers registrados:
+La generación de schemas por defecto cubre PHP types comunes:
 
 - `BoolPhpTypeSchemaResolver`
 - `IntPhpTypeSchemaResolver`
@@ -478,11 +478,11 @@ Resolvers registrados:
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-Si tu proyecto tiene un PHP type custom que necesita un custom schema, implementa `OpenApiPhpTypeSchemaResolverInterface` y registra el resolver en el servicio `OpenApiPhpTypeSchemaResolverManagerInterface`.
+Si tu proyecto tiene un PHP type custom que necesita un custom schema, implementa `OpenApiPhpTypeSchemaResolverInterface` y registra el resolver en `OpenApiPhpTypeSchemaResolverManagerInterface`.
 
 ## Object Schemas
 
-DTOs y view objects se describen desde typed PHP properties. Internamente, esto lo maneja `ObjectPhpTypeSchemaResolver`.
+DTOs y view objects se describen desde typed properties.
 
 Lee PHP classes directamente:
 
@@ -508,7 +508,7 @@ Referencia Symfony Serializer: [Serializer](https://symfony.com/doc/current/seri
 
 ## Puntos De Extensión
 
-El paquete está formado por servicios reemplazables:
+El paquete está formado por servicios reemplazables para proyectos con convenciones propias:
 
 | Service/interface | Propósito |
 | --- | --- |

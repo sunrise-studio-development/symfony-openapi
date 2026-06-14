@@ -12,7 +12,7 @@ use Throwable;
 
 final readonly class SwaggerController
 {
-    public const ROUTE_PATH = SunriseSwaggerController::ROUTE_PATH;
+    public const ROUTE_PATH = '/docs';
 
     public function __construct(
         private SwaggerConfiguration $swaggerConfiguration,

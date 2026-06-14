@@ -129,6 +129,11 @@ final class ControllerFixture
         return new DtoFixture();
     }
 
+    public function defaultSerializableResponse(): DtoFixture
+    {
+        return new DtoFixture();
+    }
+
     public function symfonyResponse(): JsonResponse
     {
         return new JsonResponse();

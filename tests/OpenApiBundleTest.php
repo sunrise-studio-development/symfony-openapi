@@ -30,6 +30,6 @@ final class OpenApiBundleTest extends TestCase
         (new OpenApiBundle())->loadExtension([], $configurator, $container);
 
         self::assertTrue($container->hasDefinition(OpenApiConfiguration::class));
-        self::assertSame('/openapi', $container->getParameter('openapi.document_uri'));
+        self::assertSame('/docs/openapi.json', $container->getParameter('openapi.document_uri'));
     }
 }

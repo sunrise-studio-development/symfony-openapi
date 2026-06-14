@@ -11,7 +11,7 @@
 
 目标是让 API 文档尽量贴近应用代码。普通 endpoints 不应该需要大量 `#[OA\...]` 代码块。路由描述 paths 和 methods，Symfony attributes 描述 request mapping，DTO 描述输入数据，view objects 描述输出数据，route options 描述 operation metadata。手写 OpenAPI fragments 只用于特殊场景。
 
-API 位于 `Sunrise\Symfony\OpenApi` namespace。包内部使用 [Sunrise HTTP Router](https://github.com/sunrise-php/http-router) 的 OpenAPI engine。
+公共 API 位于 `Sunrise\Symfony\OpenApi` namespace。
 
 ## 安装
 
@@ -19,7 +19,7 @@ API 位于 `Sunrise\Symfony\OpenApi` namespace。包内部使用 [Sunrise HTTP R
 composer require sunrise-studio/symfony-openapi
 ```
 
-该包需要 Symfony HttpKernel 8.1 或更新版本。
+该包需要 PHP 8.2 或更新版本。支持的 Symfony 组件版本定义在 `composer.json` 中。只有当应用想使用 Symfony 原生 runtime 属性 `#[Serialize]` 时，才需要 Symfony 8.1 或更新版本。
 
 注册 bundle:
 
@@ -39,12 +39,12 @@ openapi:
   resource: '@OpenApiBundle/config/routes.php'
 ```
 
-这会导入两个路由:
+这会导入两个文档路由:
 
 | Route | Controller | 用途 |
 | --- | --- | --- |
-| `GET /openapi` | `DocumentController` | 返回生成的 OpenAPI JSON document. |
-| `GET /swagger.html` | `SwaggerController` | 返回配置为读取 `/openapi` 的 Swagger UI. |
+| `GET /docs` | `SwaggerController` | 返回配置为读取 `/docs/openapi.json` 的 Swagger UI. |
+| `GET /docs/openapi.json` | `DocumentController` | 返回生成的 OpenAPI JSON document. |
 
 这两个路由不会进入生成的 API document：它们没有设置 `api: true`，并且 paths 不以 `/api/` 开头。
 
@@ -86,7 +86,7 @@ parameters:
 | `openapi.initial_document` | OpenAPI version + `API` title | 与生成的 paths 和 schemas 合并的基础 document. |
 | `openapi.initial_operation` | `responses: []` | 与每个 generated operation 合并的基础 operation. |
 | `openapi.document_filename` | `%kernel.project_dir%/var/openapi.json` | `openapi:build-document` 使用的 output file. |
-| `openapi.document_uri` | `/openapi` | 生成文档的 public URI。Swagger UI 使用它加载文档。 |
+| `openapi.document_uri` | `/docs/openapi.json` | 生成文档的 public URI。Swagger UI 使用它加载文档。 |
 | `openapi.default_timestamp_format` | `OpenApiConfiguration::DEFAULT_TIMESTAMP_FORMAT` | 用于为 date/time schemas 生成 OpenAPI `example` 的 PHP `date()` 格式. |
 
 如果需要自定义 Swagger UI assets 或 template variables，可以把 `SwaggerConfiguration` 替换为自己的 service。
@@ -98,7 +98,7 @@ parameters:
 ```yaml
 # config/routes.yaml
 swagger_ui:
-  path: /docs
+  path: /swagger.html
   controller: Sunrise\Symfony\OpenApi\Controller\SwaggerController
   methods: [GET]
   options:
@@ -110,7 +110,7 @@ swagger_ui:
 ```yaml
 # config/routes.yaml
 openapi_document:
-  path: /docs/openapi.json
+  path: /openapi.json
   controller: Sunrise\Symfony\OpenApi\Controller\DocumentController
   methods: [GET]
   options:
@@ -120,7 +120,7 @@ openapi_document:
 ```yaml
 # config/packages/openapi.yaml
 parameters:
-  openapi.document_uri: /docs/openapi.json
+  openapi.document_uri: /openapi.json
 ```
 
 ## 生成文档
@@ -133,14 +133,14 @@ php bin/console openapi:build-document
 
 该命令读取 route collection，保留应该被文档化的 routes，构建 OpenAPI document，并写入 `openapi.document_filename`。
 
-生成后:
+生成后，如果已导入包默认路由:
 
-- `/openapi` 返回生成的 JSON document.
-- `/swagger.html` 打开 Swagger UI.
+- `/docs` 打开 Swagger UI.
+- `/docs/openapi.json` 返回生成的 JSON document.
 
 ## Route Options
 
-Route options 是 route-level OpenAPI metadata 的默认来源:
+Route options 是 operation metadata 的默认位置:
 
 ```php
 use Symfony\Component\Routing\Attribute\Route;
@@ -164,14 +164,14 @@ final readonly class PetController
 
 | Option | Type | 用途 |
 | --- | --- | --- |
-| `tags` | `string\|string[]` | OpenAPI operation tags. |
+| `tag`, `tags` | `string\|string[]` | OpenAPI operation tags. |
 | `summary` | `string` | OpenAPI operation summary. |
 | `description` | `string` | OpenAPI operation description. |
 | `deprecated`, `is_deprecated`, `isDeprecated` | `bool` | 将 operation 标记为 deprecated. |
 | `api`, `is_api`, `isApi` | `bool` | 将 route 包含到 generated document 中或从中排除. |
-| `response_code` | `int` | Response status code。用于 `void` responses 和没有 `#[Serialize]` 的 serialized responses. |
-| `response_format` | `string` | 转换为 media type 的 response format，例如 `json` 转为 `application/json`. |
-| `response_formats` | `string[]` | Response formats。设置了 `response_format` 时忽略. |
+| `response_code` | `int` | 当 `#[Serialize]` 没有提供 code 时使用的 documented response status。默认值：带 response body 时为 `200`，显式 `void` 时为 `204`. |
+| `response_format` | `string` | documented response body 的 response format，会转换为 media type，例如 `json` 转为 `application/json`. |
+| `response_formats` | `string[]` | 多个 response formats。设置了 `response_format` 时忽略. |
 
 如果没有设置 API option，path 以 `/api/` 开头的 routes 会被视为 API routes。
 
@@ -179,7 +179,7 @@ final readonly class PetController
 
 ## Symfony Attributes
 
-该包支持 Symfony controller value resolver attributes。参见 Symfony 的 [controller value resolver documentation](https://symfony.com/doc/current/controller/value_resolver.html)。
+该包理解用于描述 request data 的 Symfony controller attributes。参见 Symfony 的 [controller value resolver documentation](https://symfony.com/doc/current/controller/value_resolver.html)。
 
 ### Path Variables
 
@@ -235,7 +235,7 @@ public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
 }
 ```
 
-如果 `key` 为 `null`，对象会被描述为整个 query string，使用 `style: form`。如果设置了 `key`，参数使用 `style: deepObject`。
+未设置 `key` 时，参数名使用 PHP 参数名，对象使用 `style: form`。设置 `key` 时，该值成为参数名，对象使用 `style: deepObject`。
 
 ### Request Body
 
@@ -250,7 +250,7 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 }
 ```
 
-行为:
+生成的 request body:
 
 - PHP parameter type 会成为 request schema.
 - `acceptFormat` 是可选的。如果省略，将使用 route default `_format`；如果 `_format` 也不存在，则使用 `json`.
@@ -299,10 +299,10 @@ public function history(#[MapDateTime(format: 'Y-m-d')] DateTimeImmutable $date)
 | 显式 `void` | Empty response。默认 status `204`. |
 | Symfony `Response` subclass | Response body 不会自动生成。需要手写 response 文档时使用 `#[Operation]`. |
 
-对于 JSON API，通常不需要 response format option。只有 defaults 不合适时才使用 route options:
+对于 JSON API，通常不需要 response format option。只有 defaults 不适合当前 endpoint 时才使用 route options:
 
 - `response_code` 修改 documented status，例如 create actions 使用 `201`.
-- `response_format` 文档化非默认 Symfony response format.
+- `response_format` 文档化非默认 response format.
 - `response_formats` 文档化多个 response formats.
 
 ```php
@@ -313,7 +313,7 @@ public function show(int $id): PetView
 }
 ```
 
-Symfony 8.1 引入了 [`#[Serialize]`](https://symfony.com/blog/new-in-symfony-8-1-serialize-attribute)，用于在 runtime 序列化 controller results。本包会读取 `Serialize::code`；schema 仍然来自 PHP return type。
+Symfony 8.1 引入了 [`#[Serialize]`](https://symfony.com/blog/new-in-symfony-8-1-serialize-attribute)，用于在 runtime 序列化 controller results。当该属性存在时，本包会读取 `Serialize::code`；schema 仍然来自 PHP return type。
 
 ```php
 use Symfony\Component\HttpKernel\Attribute\Serialize;
@@ -336,9 +336,9 @@ public function delete(int $id): void
 }
 ```
 
-这只负责文档生成。Symfony 自身不会把 controller 的 `null` result 转成 `204`。如果应用使用 `void` actions，请添加一个小的 `KernelEvents::VIEW` listener。
+这会把 endpoint 文档化为空的 `204` response。Symfony 自身不会把 controller 的 `null` result 转成 `204`，因此使用 `void` actions 的应用需要在 runtime 处理这个行为。
 
-如果还不能使用 Symfony 8.1，同一个 listener 也可以把 non-null controller results 序列化为 JSON。Symfony 自身实现是 [`SerializeControllerResultAttributeListener`](https://github.com/symfony/http-kernel/blob/ad1426284c2e7fe10de65dc68a25a724639e3838/EventListener/SerializeControllerResultAttributeListener.php)；一个 JSON-only 的最小版本可以这样写:
+如果应用还不能使用 Symfony 8.1，一个小的 `KernelEvents::VIEW` listener 可以同时处理两个场景：`null` 变成 `204`，其他 controller results 序列化为 JSON。Symfony 自身实现是 [`SerializeControllerResultAttributeListener`](https://github.com/symfony/http-kernel/blob/ad1426284c2e7fe10de65dc68a25a724639e3838/EventListener/SerializeControllerResultAttributeListener.php)；一个 JSON-only 的最小版本可以这样写:
 
 ```php
 namespace App\EventListener;
@@ -375,11 +375,11 @@ final readonly class JsonControllerResultListener
 }
 ```
 
-如果项目不想从 `#[Serialize]` 和 route options 中读取 response status/format，可以替换 `ResponseMetadataResolverInterface`。
+如果项目对 response status 或 formats 有不同规则，可以替换 `ResponseMetadataResolverInterface`。
 
 ## OpenAPI Attributes
 
-该包为常见 schema tasks 提供 OpenAPI attributes:
+该包为 PHP types 不足以表达的场景提供少量 OpenAPI attributes:
 
 | Attribute | Target | 用途 |
 | --- | --- | --- |
@@ -465,7 +465,7 @@ final readonly class PetController
 
 ## PHP Type Schema Resolvers
 
-已注册的 resolvers:
+默认 schema generation 覆盖常见 PHP types:
 
 - `BoolPhpTypeSchemaResolver`
 - `IntPhpTypeSchemaResolver`
@@ -478,11 +478,11 @@ final readonly class PetController
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-如果项目有需要 custom schema 的 PHP type，请实现 `OpenApiPhpTypeSchemaResolverInterface`，并在 `OpenApiPhpTypeSchemaResolverManagerInterface` service 中注册 resolver。
+如果项目有需要 custom schema 的 PHP type，请实现 `OpenApiPhpTypeSchemaResolverInterface`，并在 `OpenApiPhpTypeSchemaResolverManagerInterface` 中注册 resolver。
 
-## Object Schema Resolver
+## Object Schemas
 
-`ObjectPhpTypeSchemaResolver` 是 DTO 和 view objects 的主要 resolver。
+DTO 和 view objects 会根据 typed properties 生成 schema。
 
 它直接读取 PHP classes:
 
@@ -508,7 +508,7 @@ Symfony Serializer 参考: [Serializer](https://symfony.com/doc/current/serializ
 
 ## 扩展点
 
-该包由可替换 services 组成:
+该包由可替换 services 组成，适合有自定义 conventions 的项目:
 
 | Service/interface | 用途 |
 | --- | --- |

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi\Tests\Annotation;
 
 use PHPUnit\Framework\TestCase;
-use Sunrise\Symfony\OpenApi\Annotation\EmptyResponse;
+use Sunrise\Http\Router\OpenApi\Annotation\IgnorePropertyInterface;
+use Sunrise\Symfony\OpenApi\Annotation\IgnoreProperty;
 use Sunrise\Symfony\OpenApi\Annotation\ItemType;
 use Sunrise\Symfony\OpenApi\Annotation\Operation;
 use Sunrise\Symfony\OpenApi\Annotation\PropertyName;
@@ -30,6 +31,11 @@ final class AnnotationTest extends TestCase
         ];
 
         self::assertSame($operation, (new Operation($operation))->getOperation());
+    }
+
+    public function testIgnoreProperty(): void
+    {
+        self::assertInstanceOf(IgnorePropertyInterface::class, new IgnoreProperty());
     }
 
     public function testPropertyName(): void
