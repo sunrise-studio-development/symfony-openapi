@@ -390,6 +390,15 @@ El paquete proporciona pequeños OpenAPI attributes para casos donde los PHP typ
 | `#[IgnoreProperty]` | property | Excluye una property del object schema. |
 | `#[TimestampFormat]` | property | Sobrescribe date/time example format. |
 
+Array item types normalmente se leen desde PHPDoc:
+
+```php
+/** @var list<PetView> */
+public array $pets;
+```
+
+Se soportan `PetView[]`, `list<PetView>`, `array<PetView>` y `array<string, PetView>`. Nullable item types como `array<PetView|null>` también se soportan. Item types demasiado amplios o ambiguos, como `array<mixed>` y `array<PetView|ErrorView>`, se ignoran. Usa `#[ItemType]` cuando necesites una sobrescritura explícita o un item limit; tiene prioridad sobre `@var`.
+
 ## Fragmentos OpenAPI Manuales
 
 La mayoría de endpoints no deberían necesitar OpenAPI fragments manuales. Para casos excepcionales, usa `#[Operation]`:
@@ -495,7 +504,8 @@ Lee PHP classes directamente:
 - `#[SchemaName]` cambia component schema name;
 - `#[PropertyName]` cambia property name;
 - `#[IgnoreProperty]` excluye una property;
-- `#[ItemType]` describe array properties;
+- array item types se leen desde `@var` cuando es posible;
+- `#[ItemType]` describe array properties explícitamente y tiene prioridad sobre `@var`;
 - `#[TimestampFormat]` cambia date/time examples.
 
 Este resolver no usa Symfony Serializer metadata. No lee serializer groups, getters, setters, `SerializedName`, name converters ni reglas de conversión camelCase/snake_case.

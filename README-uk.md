@@ -390,6 +390,15 @@ final readonly class JsonControllerResultListener
 | `#[IgnoreProperty]` | property | Виключає property з object schema. |
 | `#[TimestampFormat]` | property | Перевизначає date/time example format. |
 
+Array item types зазвичай читаються з PHPDoc:
+
+```php
+/** @var list<PetView> */
+public array $pets;
+```
+
+Підтримуються форми `PetView[]`, `list<PetView>`, `array<PetView>` і `array<string, PetView>`. Nullable item types на кшталт `array<PetView|null>` підтримуються. Широкі або неоднозначні item types на кшталт `array<mixed>` і `array<PetView|ErrorView>` ігноруються. Використовуйте `#[ItemType]`, якщо потрібне явне перевизначення або item limit; він має пріоритет над `@var`.
+
 ## Ручні OpenAPI-Фрагменти
 
 Більшості endpoints не потрібні ручні OpenAPI fragments. Для виняткових випадків використовуйте `#[Operation]`:
@@ -495,7 +504,8 @@ DTO і View objects описуються за типізованими propertie
 - `#[SchemaName]` змінює component schema name;
 - `#[PropertyName]` змінює property name;
 - `#[IgnoreProperty]` виключає property;
-- `#[ItemType]` описує array properties;
+- array item types читаються з `@var`, коли це можливо;
+- `#[ItemType]` явно описує array properties і має пріоритет над `@var`;
 - `#[TimestampFormat]` змінює date/time examples.
 
 Цей resolver не використовує Symfony Serializer metadata. Він не читає serializer groups, getters, setters, `SerializedName`, name converters або camelCase/snake_case conversion rules.
