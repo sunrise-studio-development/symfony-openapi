@@ -13,6 +13,12 @@ The goal is to keep API documentation close to application code. Normal endpoint
 
 The public API lives in the `Sunrise\Symfony\OpenApi` namespace.
 
+Further reading:
+
+- [Russian article on Habr](https://habr.com/ru/articles/1047686/) is the original tutorial. It explains what problem this package solves and how to use it in a Symfony application.
+- [English translation on dev.to](https://dev.to/fenric/openapi-without-oa-how-i-built-a-symfony-documentation-generator-45fd) covers the same tutorial in English.
+- [PHP Annotations plugin for PhpStorm](https://plugins.jetbrains.com/plugin/7320-php-annotations) is expected to support aliases for this package's attributes in upcoming releases, which should improve IDE completion and navigation.
+
 ## Installation
 
 ```bash

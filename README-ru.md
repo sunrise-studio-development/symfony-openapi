@@ -13,6 +13,12 @@
 
 Публичный API живет в namespace `Sunrise\Symfony\OpenApi`.
 
+Дополнительные материалы:
+
+- [Статья на Хабре](https://habr.com/ru/articles/1047686/) — оригинальный tutorial. В ней объясняется, какую проблему решает пакет и как использовать его в Symfony-приложении.
+- [Английский перевод на dev.to](https://dev.to/fenric/openapi-without-oa-how-i-built-a-symfony-documentation-generator-45fd) покрывает тот же tutorial на английском языке.
+- [PHP Annotations plugin для PhpStorm](https://plugins.jetbrains.com/plugin/7320-php-annotations) в ближайших релизах ожидает поддержку алиасов для attributes этого пакета, что должно улучшить IDE completion и navigation.
+
 ## Установка
 
 ```bash
