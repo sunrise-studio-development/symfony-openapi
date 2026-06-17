@@ -15,8 +15,7 @@
 
 更多阅读:
 
-- [Habr 上的俄语文章](https://habr.com/ru/articles/1047686/) 是原始 tutorial。它解释了这个包解决的问题，以及如何在 Symfony 应用中使用它。
-- [dev.to 上的英文翻译](https://dev.to/fenric/openapi-without-oa-how-i-built-a-symfony-documentation-generator-45fd) 提供同一 tutorial 的英文版本。
+- [Medium 上的文章](https://medium.com/@a.fenric/openapi-without-oa-how-i-built-a-symfony-documentation-generator-af2ff83bd21c) 解释了这个包解决的问题，以及如何在 Symfony 应用中使用它。
 - [PhpStorm 的 PHP Annotations plugin](https://plugins.jetbrains.com/plugin/7320-php-annotations) 预计会在后续版本中支持此包 attributes 的 aliases，这应该会改善 IDE completion 和 navigation。
 
 ## 安装

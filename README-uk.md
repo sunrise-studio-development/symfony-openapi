@@ -15,8 +15,7 @@
 
 Додаткові матеріали:
 
-- [Стаття на Хабрі](https://habr.com/ru/articles/1047686/) — оригінальний tutorial російською мовою. Вона пояснює, яку проблему вирішує пакет і як використовувати його в Symfony-застосунку.
-- [Англійський переклад на dev.to](https://dev.to/fenric/openapi-without-oa-how-i-built-a-symfony-documentation-generator-45fd) покриває той самий tutorial англійською мовою.
+- [Стаття на Medium](https://medium.com/@a.fenric/openapi-without-oa-how-i-built-a-symfony-documentation-generator-af2ff83bd21c) пояснює, яку проблему вирішує пакет і як використовувати його в Symfony-застосунку.
 - [PHP Annotations plugin для PhpStorm](https://plugins.jetbrains.com/plugin/7320-php-annotations) у найближчих релізах очікує підтримку alias для attributes цього пакета, що має покращити IDE completion і navigation.
 
 ## Встановлення
