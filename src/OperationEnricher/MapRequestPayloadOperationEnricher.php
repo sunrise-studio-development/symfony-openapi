@@ -52,15 +52,23 @@ final class MapRequestPayloadOperationEnricher implements
                 continue;
             }
 
-            $mapRequestPayload = $annotations[0]->newInstance();
+            $mapRequestPayloadArgs = $annotations[0]->getArguments();
+
+            // Symfony less than 7.1 doesn't contain this argument.
+            // https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md
+            /** @var string|null $mapRequestPayloadTypeArg */
+            $mapRequestPayloadTypeArg = $mapRequestPayloadArgs['type'] ?? null;
+
+            /** @var string|array<array-key, string>|null $mapRequestPayloadAcceptFormatArg */
+            $mapRequestPayloadAcceptFormatArg = $mapRequestPayloadArgs['acceptFormat'] ?? null;
 
             $requestBodyType = TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType());
 
-            if ($mapRequestPayload->type !== null && $requestBodyType->getName() === Type::PHP_TYPE_NAME_ARRAY) {
+            if ($mapRequestPayloadTypeArg !== null && $requestBodyType->getName() === Type::PHP_TYPE_NAME_ARRAY) {
                 $requestBodySchema = [
                     'type' => Type::OAS_TYPE_NAME_ARRAY,
                     'items' => $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
-                        new Type($mapRequestPayload->type),
+                        new Type($mapRequestPayloadTypeArg),
                         $requestHandlerParameter,
                     )
                 ];
@@ -74,7 +82,7 @@ final class MapRequestPayloadOperationEnricher implements
             /** @var string|null $routeFormat */
             $routeFormat = $route->getAttribute('_format');
 
-            $requestFormats = (array) $mapRequestPayload->acceptFormat
+            $requestFormats = (array) $mapRequestPayloadAcceptFormatArg
                 ?: (array) $routeFormat
                 ?: self::DEFAULT_REQUEST_FORMATS;
 
