@@ -20,7 +20,7 @@ final class MapUploadedFileOperationEnricherTest extends TestCase
     protected function setUp(): void
     {
         if (!\class_exists(MapUploadedFile::class)) {
-            $this->markTestSkipped('Symfony less than 7.1 does not support.');
+            self::markTestSkipped('Symfony less than 7.1 does not support.');
         }
 
         parent::setUp();
