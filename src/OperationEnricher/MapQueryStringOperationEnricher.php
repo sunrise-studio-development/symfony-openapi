@@ -48,11 +48,17 @@ final class MapQueryStringOperationEnricher implements
                 continue;
             }
 
-            $mapQueryString = $annotations[0]->newInstance();
+            $mapQueryStringArgs = $annotations[0]->getArguments();
+
+            // Symfony less than 7.3 doesn't contain this argument.
+            // https://github.com/symfony/symfony/blob/7.3/src/Symfony/Component/HttpKernel/CHANGELOG.md
+            // https://symfony.com/blog/new-in-symfony-7-3-dx-improvements-part-2#improved-mapquerystring
+            /** @var string|null $mapQueryStringKeyArg */
+            $mapQueryStringKeyArg = $mapQueryStringArgs['key'] ?? null;
 
             $operation['parameters'][] = [
                 'in' => 'query',
-                'name' => $mapQueryString->key ?? $requestHandlerParameter->name,
+                'name' => $mapQueryStringKeyArg ?? $requestHandlerParameter->name,
                 'schema' => $this->phpTypeSchemaResolverManager->resolvePhpTypeSchema(
                     TypeFactory::fromPhpTypeReflection($requestHandlerParameter->getType()),
                     $requestHandlerParameter,
@@ -60,7 +66,7 @@ final class MapQueryStringOperationEnricher implements
                 'required' => !$requestHandlerParameter->isDefaultValueAvailable()
                     && !$requestHandlerParameter->allowsNull(),
                 // https://swagger.io/docs/specification/v3_0/serialization/#query-parameters
-                'style' => $mapQueryString->key === null ? 'form' : 'deepObject',
+                'style' => $mapQueryStringKeyArg === null ? 'form' : 'deepObject',
             ];
         }
     }

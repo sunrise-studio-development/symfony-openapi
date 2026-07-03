@@ -43,6 +43,7 @@ use Sunrise\Symfony\OpenApi\ResponseMetadataResolverInterface;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolver;
 use Sunrise\Symfony\OpenApi\RouteMetadataResolverInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
@@ -119,19 +120,27 @@ return static function (ContainerConfigurator $container): void {
     $services->set(MapQueryParameterOperationEnricher::class);
     $services->set(MapQueryStringOperationEnricher::class);
     $services->set(MapRequestPayloadOperationEnricher::class);
-    $services->set(MapUploadedFileOperationEnricher::class);
     $services->set(PathVariablesOperationEnricher::class);
     $services->set(ResponseOperationEnricher::class);
 
+    $operationEnrichers = [
+        service(MapQueryParameterOperationEnricher::class),
+        service(MapQueryStringOperationEnricher::class),
+        service(MapRequestPayloadOperationEnricher::class),
+        service(PathVariablesOperationEnricher::class),
+        service(ResponseOperationEnricher::class),
+    ];
+
+    // Symfony less than 7.1 doesn't contain this attribute.
+    // https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md
+    // https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
+    if (\class_exists(MapUploadedFile::class)) {
+        $services->set(MapUploadedFileOperationEnricher::class);
+        $operationEnrichers[] = service(MapUploadedFileOperationEnricher::class);
+    }
+
     $services->set(OpenApiOperationEnricherManagerInterface::class, OpenApiOperationEnricherManager::class)
-        ->arg('$operationEnrichers', [
-            service(MapQueryParameterOperationEnricher::class),
-            service(MapQueryStringOperationEnricher::class),
-            service(MapRequestPayloadOperationEnricher::class),
-            service(MapUploadedFileOperationEnricher::class),
-            service(PathVariablesOperationEnricher::class),
-            service(ResponseOperationEnricher::class),
-        ])
+        ->arg('$operationEnrichers', $operationEnrichers)
         ->arg('$useDefaultOperationEnrichers', false);
 
     // ***

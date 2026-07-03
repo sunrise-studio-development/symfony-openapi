@@ -242,6 +242,9 @@ public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
 
 Без `key` ім'я параметра береться з PHP-параметра, а об'єкт використовує `style: form`. З `key` це значення стає іменем параметра, а об'єкт використовує `style: deepObject`.
 
+> [!NOTE]
+> Версії Symfony нижче 7.3 не містять аргумент `MapQueryString::key`. Див. [Symfony 7.3 HttpKernel changelog](https://github.com/symfony/symfony/blob/7.3/src/Symfony/Component/HttpKernel/CHANGELOG.md) і [Symfony 7.3 DX improvements](https://symfony.com/blog/new-in-symfony-7-3-dx-improvements-part-2#improved-mapquerystring).
+
 ### Request Body
 
 `#[MapRequestPayload]` створює OpenAPI `requestBody`.
@@ -263,6 +266,9 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 - Якщо PHP parameter required, OpenAPI request body також required.
 - Для array payload `MapRequestPayload(type: SomeDto::class)` описує item type.
 
+> [!NOTE]
+> Версії Symfony нижче 7.1 не містять аргумент `MapRequestPayload::type`. Див. [Symfony 7.1 HttpKernel changelog](https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md).
+
 ### Uploaded Files
 
 `#[MapUploadedFile]` додає `multipart/form-data` request body з binary fields.
@@ -278,6 +284,9 @@ public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): Js
 ```
 
 Variadic uploaded files описуються як array of binary strings і не позначаються required.
+
+> [!NOTE]
+> Версії Symfony нижче 7.1 не містять атрибут `MapUploadedFile`. Див. [Symfony 7.1 HttpKernel changelog](https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md) і [анонс Symfony 7.1 MapUploadedFile](https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute).
 
 ### Date And Time
 

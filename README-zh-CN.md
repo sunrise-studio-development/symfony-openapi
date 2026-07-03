@@ -242,6 +242,9 @@ public function list(#[MapQueryString] PetSearchQuery $query): JsonResponse
 
 未设置 `key` 时，参数名使用 PHP 参数名，对象使用 `style: form`。设置 `key` 时，该值成为参数名，对象使用 `style: deepObject`。
 
+> [!NOTE]
+> Symfony 7.3 之前的版本不包含 `MapQueryString::key` 参数。参见 [Symfony 7.3 HttpKernel changelog](https://github.com/symfony/symfony/blob/7.3/src/Symfony/Component/HttpKernel/CHANGELOG.md) 和 [Symfony 7.3 DX improvements](https://symfony.com/blog/new-in-symfony-7-3-dx-improvements-part-2#improved-mapquerystring)。
+
 ### Request Body
 
 `#[MapRequestPayload]` 创建 OpenAPI `requestBody`。
@@ -263,6 +266,9 @@ public function create(#[MapRequestPayload(acceptFormat: 'json')] CreatePetReque
 - 如果 PHP parameter 是 required，OpenAPI request body 也是 required.
 - 对于 array payloads，`MapRequestPayload(type: SomeDto::class)` 描述 item type.
 
+> [!NOTE]
+> Symfony 7.1 之前的版本不包含 `MapRequestPayload::type` 参数。参见 [Symfony 7.1 HttpKernel changelog](https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md)。
+
 ### Uploaded Files
 
 `#[MapUploadedFile]` 添加带 binary fields 的 `multipart/form-data` request body。
@@ -278,6 +284,9 @@ public function upload(#[MapUploadedFile(name: 'photo')] UploadedFile $file): Js
 ```
 
 Variadic uploaded files 会被描述为 binary strings 的 array，并且不会标记为 required。
+
+> [!NOTE]
+> Symfony 7.1 之前的版本不包含 `MapUploadedFile` attribute。参见 [Symfony 7.1 HttpKernel changelog](https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md) 和 [Symfony 7.1 MapUploadedFile announcement](https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute)。
 
 ### Date And Time
 
