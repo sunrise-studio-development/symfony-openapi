@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Sunrise\Symfony\OpenApi;
 
 use Override;
+use Sunrise\Http\Router\OpenApi\OpenApiOperationEnricherInterface;
+use Sunrise\Http\Router\OpenApi\OpenApiPhpTypeSchemaResolverInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
@@ -14,6 +16,16 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
  */
 final class OpenApiBundle extends AbstractBundle
 {
+    #[Override]
+    public function build(ContainerBuilder $container): void
+    {
+        $container->registerForAutoconfiguration(OpenApiOperationEnricherInterface::class)
+            ->addTag('openapi.operation_enricher');
+
+        $container->registerForAutoconfiguration(OpenApiPhpTypeSchemaResolverInterface::class)
+            ->addTag('openapi.php_type_schema_resolver');
+    }
+
     /**
      * @inheritDoc
      *
