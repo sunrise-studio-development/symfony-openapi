@@ -501,7 +501,7 @@ final readonly class PetController
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-如果项目有需要 custom schema 的 PHP type，请实现 `OpenApiPhpTypeSchemaResolverInterface`，并在 `OpenApiPhpTypeSchemaResolverManagerInterface` 中注册 resolver。
+如果项目有需要 custom schema 的 PHP type，请实现 `OpenApiPhpTypeSchemaResolverInterface`。启用 autoconfigure 时，resolver 会自动注册；否则请为它添加 `openapi.php_type_schema_resolver` tag。
 
 ## Object Schemas
 
@@ -534,12 +534,12 @@ Symfony Serializer 参考: [Serializer](https://symfony.com/doc/current/serializ
 
 该包由可替换 services 组成，适合有自定义 conventions 的项目:
 
-| Service/interface | 用途 |
-| --- | --- |
-| `RouteMetadataResolverInterface` | 控制 tags、summary、description、deprecation 和 API filtering. |
-| `ResponseMetadataResolverInterface` | 控制 response status codes 和 response formats. |
-| `OpenApiOperationEnricherInterface` | 添加 request parameters、request bodies、responses 或 custom operation data. |
-| `OpenApiPhpTypeSchemaResolverInterface` | 将 PHP types 转换为 OpenAPI schemas. |
-| `OpenApiPathBuilderInterface` | 将 Symfony route paths 转换为 OpenAPI paths. |
+| Service/interface | 用途 | Tag |
+| --- | --- | --- |
+| `RouteMetadataResolverInterface` | 控制 tags、summary、description、deprecation 和 API filtering. | — |
+| `ResponseMetadataResolverInterface` | 控制 response status codes 和 response formats. | — |
+| `OpenApiOperationEnricherInterface` | 添加 request parameters、request bodies、responses 或 custom operation data. | `openapi.operation_enricher`（启用 autoconfigure 时自动添加） |
+| `OpenApiPhpTypeSchemaResolverInterface` | 将 PHP types 转换为 OpenAPI schemas. | `openapi.php_type_schema_resolver`（启用 autoconfigure 时自动添加） |
+| `OpenApiPathBuilderInterface` | 将 Symfony route paths 转换为 OpenAPI paths. | — |
 
 当项目规则与 defaults 不同，可以在 Symfony container 中替换这些 services。

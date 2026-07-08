@@ -46,10 +46,12 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Attribute\MapUploadedFile;
 
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
 return static function (ContainerConfigurator $container): void {
-    $services = $container->services();
     $parameters = $container->parameters();
+
+    $services = $container->services();
 
     $services
         ->defaults()
@@ -67,7 +69,8 @@ return static function (ContainerConfigurator $container): void {
     ]);
 
     $parameters->set('openapi.initial_operation', [
-        'responses' => [],
+        'responses' => [
+        ],
     ]);
 
     $parameters->set('openapi.document_filename', '%kernel.project_dir%/var/openapi.json');
@@ -88,59 +91,56 @@ return static function (ContainerConfigurator $container): void {
 
     // ***
 
-    $services->set(ArrayAccessPhpTypeSchemaResolver::class);
-    $services->set(ArrayPhpTypeSchemaResolver::class);
-    $services->set(BackedEnumPhpTypeSchemaResolver::class);
-    $services->set(BoolPhpTypeSchemaResolver::class);
-    $services->set(FloatPhpTypeSchemaResolver::class);
-    $services->set(IntPhpTypeSchemaResolver::class);
-    $services->set(ObjectPhpTypeSchemaResolver::class);
-    $services->set(StringPhpTypeSchemaResolver::class);
-    $services->set(SunriseTimestampResolver::class);
-    $services->set(SymfonyTimestampResolver::class);
-    $services->set(SymfonyUidPhpTypeSchemaResolver::class);
+    $services->set(ArrayAccessPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(ArrayPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(BackedEnumPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(BoolPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(FloatPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(IntPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(ObjectPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(StringPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(SunriseTimestampResolver::class)
+        ->autoconfigure(false);
+    $services->set(SymfonyTimestampResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
+    $services->set(SymfonyUidPhpTypeSchemaResolver::class)
+        ->tag('openapi.php_type_schema_resolver');
 
     $services->set(OpenApiPhpTypeSchemaResolverManagerInterface::class, OpenApiPhpTypeSchemaResolverManager::class)
-        ->arg('$phpTypeSchemaResolvers', [
-            service(ArrayAccessPhpTypeSchemaResolver::class),
-            service(ArrayPhpTypeSchemaResolver::class),
-            service(BackedEnumPhpTypeSchemaResolver::class),
-            service(BoolPhpTypeSchemaResolver::class),
-            service(FloatPhpTypeSchemaResolver::class),
-            service(IntPhpTypeSchemaResolver::class),
-            service(ObjectPhpTypeSchemaResolver::class),
-            service(StringPhpTypeSchemaResolver::class),
-            service(SymfonyTimestampResolver::class),
-            service(SymfonyUidPhpTypeSchemaResolver::class),
-        ])
+        ->arg('$phpTypeSchemaResolvers', tagged_iterator('openapi.php_type_schema_resolver'))
         ->arg('$useDefaultPhpTypeSchemaResolvers', false);
 
     // ***
 
-    $services->set(MapQueryParameterOperationEnricher::class);
-    $services->set(MapQueryStringOperationEnricher::class);
-    $services->set(MapRequestPayloadOperationEnricher::class);
-    $services->set(PathVariablesOperationEnricher::class);
-    $services->set(ResponseOperationEnricher::class);
-
-    $operationEnrichers = [
-        service(MapQueryParameterOperationEnricher::class),
-        service(MapQueryStringOperationEnricher::class),
-        service(MapRequestPayloadOperationEnricher::class),
-        service(PathVariablesOperationEnricher::class),
-        service(ResponseOperationEnricher::class),
-    ];
+    $services->set(MapQueryParameterOperationEnricher::class)
+        ->tag('openapi.operation_enricher');
+    $services->set(MapQueryStringOperationEnricher::class)
+        ->tag('openapi.operation_enricher');
+    $services->set(MapRequestPayloadOperationEnricher::class)
+        ->tag('openapi.operation_enricher');
+    $services->set(PathVariablesOperationEnricher::class)
+        ->tag('openapi.operation_enricher');
+    $services->set(ResponseOperationEnricher::class)
+        ->tag('openapi.operation_enricher');
 
     // Symfony less than 7.1 doesn't contain this attribute.
     // https://github.com/symfony/symfony/blob/7.1/src/Symfony/Component/HttpKernel/CHANGELOG.md
     // https://symfony.com/blog/new-in-symfony-7-1-mapuploadedfile-attribute
     if (\class_exists(MapUploadedFile::class)) {
-        $services->set(MapUploadedFileOperationEnricher::class);
-        $operationEnrichers[] = service(MapUploadedFileOperationEnricher::class);
+        $services->set(MapUploadedFileOperationEnricher::class)
+            ->tag('openapi.operation_enricher');
     }
 
     $services->set(OpenApiOperationEnricherManagerInterface::class, OpenApiOperationEnricherManager::class)
-        ->arg('$operationEnrichers', $operationEnrichers)
+        ->arg('$operationEnrichers', tagged_iterator('openapi.operation_enricher'))
         ->arg('$useDefaultOperationEnrichers', false);
 
     // ***
@@ -149,7 +149,6 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(DocumentController::class)
         ->tag('controller.service_arguments');
-
     $services->set(SwaggerController::class)
         ->tag('controller.service_arguments');
 

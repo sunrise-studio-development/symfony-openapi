@@ -501,7 +501,7 @@ The default schema generation covers common PHP types:
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-If your project has a custom PHP type that needs a custom schema, implement `OpenApiPhpTypeSchemaResolverInterface` and register it in `OpenApiPhpTypeSchemaResolverManagerInterface`.
+If your project has a custom PHP type that needs a custom schema, implement `OpenApiPhpTypeSchemaResolverInterface`. With autoconfigure enabled, the resolver will be registered automatically. Otherwise, tag it with `openapi.php_type_schema_resolver`.
 
 ## Object Schemas
 
@@ -534,12 +534,12 @@ Symfony Serializer reference: [Serializer](https://symfony.com/doc/current/seria
 
 The package is built from replaceable services for projects that need different conventions:
 
-| Service/interface | Purpose |
-| --- | --- |
-| `RouteMetadataResolverInterface` | Controls tags, summary, description, deprecation, and API filtering. |
-| `ResponseMetadataResolverInterface` | Controls response status codes and response formats. |
-| `OpenApiOperationEnricherInterface` | Adds request parameters, request bodies, responses, or custom operation data. |
-| `OpenApiPhpTypeSchemaResolverInterface` | Converts PHP types to OpenAPI schemas. |
-| `OpenApiPathBuilderInterface` | Converts Symfony route paths to OpenAPI paths. |
+| Service/interface | Purpose | Tag |
+| --- | --- | --- |
+| `RouteMetadataResolverInterface` | Controls tags, summary, description, deprecation, and API filtering. | — |
+| `ResponseMetadataResolverInterface` | Controls response status codes and response formats. | — |
+| `OpenApiOperationEnricherInterface` | Adds request parameters, request bodies, responses, or custom operation data. | `openapi.operation_enricher` (added automatically with autoconfigure) |
+| `OpenApiPhpTypeSchemaResolverInterface` | Converts PHP types to OpenAPI schemas. | `openapi.php_type_schema_resolver` (added automatically with autoconfigure) |
+| `OpenApiPathBuilderInterface` | Converts Symfony route paths to OpenAPI paths. | — |
 
 Replace these services in the Symfony container when project rules differ from the defaults.

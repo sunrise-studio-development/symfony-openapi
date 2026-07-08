@@ -501,7 +501,7 @@ A geração padrão de schemas cobre PHP types comuns:
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-Se o seu projeto tem um PHP type custom que precisa de um custom schema, implemente `OpenApiPhpTypeSchemaResolverInterface` e registre o resolver em `OpenApiPhpTypeSchemaResolverManagerInterface`.
+Se o seu projeto tem um PHP type custom que precisa de um custom schema, implemente `OpenApiPhpTypeSchemaResolverInterface`. Com autoconfigure habilitado, o resolver será registrado automaticamente. Caso contrário, adicione a tag `openapi.php_type_schema_resolver`.
 
 ## Object Schemas
 
@@ -534,12 +534,12 @@ Referência Symfony Serializer: [Serializer](https://symfony.com/doc/current/ser
 
 O pacote é formado por serviços substituíveis para projetos com convenções próprias:
 
-| Service/interface | Propósito |
-| --- | --- |
-| `RouteMetadataResolverInterface` | Controla tags, summary, description, deprecation e API filtering. |
-| `ResponseMetadataResolverInterface` | Controla response status codes e response formats. |
-| `OpenApiOperationEnricherInterface` | Adiciona request parameters, request bodies, responses ou custom operation data. |
-| `OpenApiPhpTypeSchemaResolverInterface` | Converte PHP types para OpenAPI schemas. |
-| `OpenApiPathBuilderInterface` | Converte Symfony route paths para OpenAPI paths. |
+| Service/interface | Propósito | Tag |
+| --- | --- | --- |
+| `RouteMetadataResolverInterface` | Controla tags, summary, description, deprecation e API filtering. | — |
+| `ResponseMetadataResolverInterface` | Controla response status codes e response formats. | — |
+| `OpenApiOperationEnricherInterface` | Adiciona request parameters, request bodies, responses ou custom operation data. | `openapi.operation_enricher` (adicionada automaticamente com autoconfigure) |
+| `OpenApiPhpTypeSchemaResolverInterface` | Converte PHP types para OpenAPI schemas. | `openapi.php_type_schema_resolver` (adicionada automaticamente com autoconfigure) |
+| `OpenApiPathBuilderInterface` | Converte Symfony route paths para OpenAPI paths. | — |
 
 Substitua esses serviços no Symfony container quando as regras do projeto forem diferentes dos defaults.
