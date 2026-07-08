@@ -501,7 +501,7 @@ final readonly class PetController
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-Если проекту нужна custom schema для своего PHP type, реализуйте `OpenApiPhpTypeSchemaResolverInterface` и зарегистрируйте resolver в `OpenApiPhpTypeSchemaResolverManagerInterface`.
+Если проекту нужна custom schema для своего PHP type, реализуйте `OpenApiPhpTypeSchemaResolverInterface`. При autoconfigure resolver будет зарегистрирован автоматически, иначе подключите его тегом `openapi.php_type_schema_resolver`.
 
 ## Object Schemas
 
@@ -534,12 +534,12 @@ DTO и View objects описываются по типизированным pro
 
 Пакет собран из заменяемых сервисов для проектов со своими conventions:
 
-| Service/interface | Назначение |
-| --- | --- |
-| `RouteMetadataResolverInterface` | Управляет tags, summary, description, deprecation и API filtering. |
-| `ResponseMetadataResolverInterface` | Управляет response status codes и response formats. |
-| `OpenApiOperationEnricherInterface` | Добавляет request parameters, request bodies, responses или custom operation data. |
-| `OpenApiPhpTypeSchemaResolverInterface` | Преобразует PHP types в OpenAPI schemas. |
-| `OpenApiPathBuilderInterface` | Преобразует Symfony route paths в OpenAPI paths. |
+| Service/interface                       | Назначение                                                                         | Тег                                                                              |
+|-----------------------------------------|------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `RouteMetadataResolverInterface`        | Управляет tags, summary, description, deprecation и API filtering.                 | —                                                                                |
+| `ResponseMetadataResolverInterface`     | Управляет response status codes и response formats.                                | —                                                                                |
+| `OpenApiOperationEnricherInterface`     | Добавляет request parameters, request bodies, responses или custom operation data. | `openapi.operation_enricher` (добавляется автоматически при autoconfigure)       |
+| `OpenApiPhpTypeSchemaResolverInterface` | Преобразует PHP types в OpenAPI schemas.                                           | `openapi.php_type_schema_resolver` (добавляется автоматически при autoconfigure) |
+| `OpenApiPathBuilderInterface`           | Преобразует Symfony route paths в OpenAPI paths.                                   | —                                                                                |
 
 Заменяйте эти сервисы в Symfony container, если правила проекта отличаются от defaults.

@@ -501,7 +501,7 @@ final readonly class PetController
 - `SymfonyUidPhpTypeSchemaResolver`
 - `Sunrise\Symfony\OpenApi\PhpTypeSchemaResolver\TimestampPhpTypeSchemaResolver`
 
-Якщо проєкту потрібна custom schema для власного PHP type, реалізуйте `OpenApiPhpTypeSchemaResolverInterface` і зареєструйте resolver в `OpenApiPhpTypeSchemaResolverManagerInterface`.
+Якщо проєкту потрібна custom schema для власного PHP type, реалізуйте `OpenApiPhpTypeSchemaResolverInterface`. При autoconfigure resolver буде зареєстровано автоматично, інакше підключіть його тегом `openapi.php_type_schema_resolver`.
 
 ## Object Schemas
 
@@ -534,12 +534,12 @@ DTO і View objects описуються за типізованими propertie
 
 Пакет складається із замінних сервісів для проєктів зі своїми conventions:
 
-| Service/interface | Призначення |
-| --- | --- |
-| `RouteMetadataResolverInterface` | Керує tags, summary, description, deprecation і API filtering. |
-| `ResponseMetadataResolverInterface` | Керує response status codes і response formats. |
-| `OpenApiOperationEnricherInterface` | Додає request parameters, request bodies, responses або custom operation data. |
-| `OpenApiPhpTypeSchemaResolverInterface` | Перетворює PHP types на OpenAPI schemas. |
-| `OpenApiPathBuilderInterface` | Перетворює Symfony route paths на OpenAPI paths. |
+| Service/interface | Призначення | Тег |
+| --- | --- | --- |
+| `RouteMetadataResolverInterface` | Керує tags, summary, description, deprecation і API filtering. | — |
+| `ResponseMetadataResolverInterface` | Керує response status codes і response formats. | — |
+| `OpenApiOperationEnricherInterface` | Додає request parameters, request bodies, responses або custom operation data. | `openapi.operation_enricher` (додається автоматично при autoconfigure) |
+| `OpenApiPhpTypeSchemaResolverInterface` | Перетворює PHP types на OpenAPI schemas. | `openapi.php_type_schema_resolver` (додається автоматично при autoconfigure) |
+| `OpenApiPathBuilderInterface` | Перетворює Symfony route paths на OpenAPI paths. | — |
 
 Замінюйте ці сервіси в Symfony container, якщо правила проєкту відрізняються від defaults.
