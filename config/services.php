@@ -107,7 +107,8 @@ return static function (ContainerConfigurator $container): void {
         ->tag('openapi.php_type_schema_resolver');
     $services->set(StringPhpTypeSchemaResolver::class)
         ->tag('openapi.php_type_schema_resolver');
-    $services->set(SunriseTimestampResolver::class);
+    $services->set(SunriseTimestampResolver::class)
+        ->autoconfigure(false);
     $services->set(SymfonyTimestampResolver::class)
         ->tag('openapi.php_type_schema_resolver');
     $services->set(SymfonyUidPhpTypeSchemaResolver::class)
